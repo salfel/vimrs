@@ -1,5 +1,7 @@
 mod app;
 mod display;
+mod mode;
+mod state;
 mod tui;
 
 use app::App;

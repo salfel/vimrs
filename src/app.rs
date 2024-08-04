@@ -1,27 +1,30 @@
-use std::io;
+use std::{io, rc::Rc};
 
 use ratatui::{
-    crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind},
+    crossterm::event::{self, Event, KeyEventKind},
     prelude::{Buffer, Rect, Widget},
     widgets::{block::Title, Block},
     Frame,
 };
 
-use crate::display::Display;
-use crate::tui;
+use crate::{display::Display, mode::Mode, state::State};
+use crate::{mode::normal::Normal, tui};
 
 pub struct App {
     exit: bool,
-    content: String,
+    state: Rc<State>,
     file: Option<String>,
+    mode: Box<dyn Mode>,
 }
 
 impl App {
     pub fn new() -> Self {
+        let state = Rc::new(State::new(String::new()));
         App {
             exit: false,
-            content: String::new(),
             file: None,
+            mode: Box::new(Normal::new(Rc::clone(&state))),
+            state,
         }
     }
 
@@ -29,13 +32,17 @@ impl App {
         while !self.exit {
             terminal.draw(|frame| self.render_frame(frame))?;
             self.handle_events()?;
+
+            if let Some(mode) = self.mode.mode() {
+                self.mode = mode;
+            }
         }
 
         Ok(())
     }
 
     fn render_frame(&self, frame: &mut Frame) {
-        let display = Display::new(&self.content);
+        let display = Display::new(self.state.get_content());
 
         frame.render_widget(display, frame.size());
     }
@@ -43,23 +50,12 @@ impl App {
     fn handle_events(&mut self) -> io::Result<()> {
         match event::read()? {
             Event::Key(event) if event.kind == KeyEventKind::Press => {
-                self.handle_key_events(event);
+                self.mode.handle_key(event);
             }
             _ => {}
         }
 
         Ok(())
-    }
-
-    fn handle_key_events(&mut self, event: KeyEvent) {
-        match event.code {
-            KeyCode::Char('q') => self.exit(),
-            _ => {}
-        }
-    }
-
-    fn exit(&mut self) {
-        self.exit = true;
     }
 }
 
