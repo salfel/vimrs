@@ -32,6 +32,12 @@ impl Command {
         self.exit_to_normal();
     }
 
+    fn remove_char(&mut self) {
+        if self.command.pop().is_none() {
+            self.exit_to_normal();
+        }
+    }
+
     fn exit_to_normal(&mut self) {
         self.mode = Some(Box::new(Normal::new(Rc::clone(&self.state))));
     }
@@ -50,9 +56,7 @@ impl Mode for Command {
         match event.code {
             KeyCode::Esc => self.exit_to_normal(),
             KeyCode::Char(char) => self.command.push(char),
-            KeyCode::Backspace => {
-                self.command.pop();
-            }
+            KeyCode::Backspace => self.remove_char(),
             KeyCode::Enter => self.execute_command(),
             _ => {}
         }
