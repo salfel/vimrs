@@ -5,15 +5,15 @@ use ratatui::{
     layout::Rect,
     Frame,
 };
-use std::rc::Rc;
+use std::{borrow::Borrow, cell::RefCell, rc::Rc};
 
 pub struct Insert {
-    state: Rc<State>,
+    state: Rc<RefCell<State>>,
     exit: bool,
 }
 
 impl Insert {
-    pub fn new(state: Rc<State>) -> Self {
+    pub fn new(state: Rc<RefCell<State>>) -> Self {
         Insert { exit: false, state }
     }
 }
@@ -39,7 +39,8 @@ impl Mode for Insert {
     }
 
     fn render(&mut self, frame: &mut Frame, rect: Rect) {
-        let display = Display::new(self.state.get_content());
+        let state = (*self.state).borrow();
+        let display = Display::new(state.get_content());
         frame.render_widget(display, rect);
     }
 }

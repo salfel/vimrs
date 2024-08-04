@@ -5,15 +5,15 @@ use ratatui::{
     layout::Rect,
     Frame,
 };
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Normal {
     mode: Option<Box<dyn Mode>>,
-    state: Rc<State>,
+    state: Rc<RefCell<State>>,
 }
 
 impl Normal {
-    pub fn new(state: Rc<State>) -> Self {
+    pub fn new(state: Rc<RefCell<State>>) -> Self {
         Normal { mode: None, state }
     }
 }
@@ -36,7 +36,8 @@ impl Mode for Normal {
     }
 
     fn render(&mut self, frame: &mut Frame, rect: Rect) {
-        let display = Display::new(self.state.get_content());
+        let state = (*self.state).borrow();
+        let display = Display::new(state.get_content());
         frame.render_widget(display, rect);
     }
 }

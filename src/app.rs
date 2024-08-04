@@ -1,4 +1,4 @@
-use std::{io, rc::Rc};
+use std::{cell::RefCell, io, rc::Rc};
 
 use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
@@ -11,17 +11,15 @@ use crate::{mode::normal::Normal, tui};
 use crate::{mode::Mode, state::State};
 
 pub struct App {
-    exit: bool,
-    state: Rc<State>,
+    state: Rc<RefCell<State>>,
     file: Option<String>,
     mode: Box<dyn Mode>,
 }
 
 impl App {
     pub fn new() -> Self {
-        let state = Rc::new(State::new(String::new()));
+        let state = Rc::new(RefCell::new(State::new(String::new())));
         App {
-            exit: false,
             file: None,
             mode: Box::new(Normal::new(Rc::clone(&state))),
             state,
@@ -29,7 +27,7 @@ impl App {
     }
 
     pub fn run(&mut self, terminal: &mut tui::Tui) -> io::Result<()> {
-        while !self.exit {
+        while !self.state.borrow().exit {
             terminal.draw(|frame| self.render_frame(frame))?;
             self.handle_events()?;
 

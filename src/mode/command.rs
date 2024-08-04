@@ -2,19 +2,21 @@ use super::{normal::Normal, Mode};
 use crate::{display::Display, state::State};
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent},
+    layout::{Constraint, Direction, Layout},
     prelude::Rect,
+    widgets::Paragraph,
     Frame,
 };
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 pub struct Command {
     mode: Option<Box<dyn Mode>>,
-    state: Rc<State>,
+    state: Rc<RefCell<State>>,
     command: String,
 }
 
 impl Command {
-    pub fn new(state: Rc<State>) -> Self {
+    pub fn new(state: Rc<RefCell<State>>) -> Self {
         Command {
             mode: None,
             state,
@@ -23,6 +25,10 @@ impl Command {
     }
 
     fn execute_command(&mut self) {
+        match self.command.as_str() {
+            "q" => (*self.state).borrow_mut().exit = true,
+            _ => {}
+        }
         self.exit_to_normal();
     }
 
@@ -44,13 +50,25 @@ impl Mode for Command {
         match event.code {
             KeyCode::Esc => self.exit_to_normal(),
             KeyCode::Char(char) => self.command.push(char),
+            KeyCode::Backspace => {
+                self.command.pop();
+            }
             KeyCode::Enter => self.execute_command(),
             _ => {}
         }
     }
 
     fn render(&mut self, frame: &mut Frame, rect: Rect) {
-        let display = Display::new(self.state.get_content());
-        frame.render_widget(display, rect);
+        let layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
+            .split(rect);
+
+        let state = (*self.state).borrow();
+        let display = Display::new(state.get_content());
+        frame.render_widget(display, layout[0]);
+
+        let command = Paragraph::new(format!(":{}", self.command));
+        frame.render_widget(command, layout[1]);
     }
 }
