@@ -7,4 +7,6 @@ pub trait Mode {
     fn mode(&mut self) -> Option<Box<dyn Mode>>;
 
     fn handle_key(&mut self, event: KeyEvent);
+
+    fn label(&self) -> String;
 }

@@ -18,6 +18,10 @@ impl Insert {
 }
 
 impl Mode for Insert {
+    fn label(&self) -> String {
+        String::from("Insert")
+    }
+
     fn mode(&mut self) -> Option<Box<dyn Mode>> {
         if self.exit {
             Some(Box::new(Normal::new(Rc::clone(&self.state))))

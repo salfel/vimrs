@@ -2,6 +2,8 @@ use std::{io, rc::Rc};
 
 use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
+    layout::{Constraint, Direction, Layout},
+    widgets::{Paragraph, Widget},
     Frame,
 };
 
@@ -40,9 +42,16 @@ impl App {
     }
 
     fn render_frame(&self, frame: &mut Frame) {
-        let display = Display::new(self.state.get_content());
+        let layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
+            .split(frame.size());
 
-        frame.render_widget(display, frame.size());
+        let display = Display::new(self.state.get_content());
+        frame.render_widget(display, layout[0]);
+
+        let show_mode = Paragraph::new(self.mode.label());
+        frame.render_widget(show_mode, layout[1]);
     }
 
     fn handle_events(&mut self) -> io::Result<()> {

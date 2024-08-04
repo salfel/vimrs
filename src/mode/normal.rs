@@ -18,6 +18,10 @@ impl Normal {
 }
 
 impl Mode for Normal {
+    fn label(&self) -> String {
+        String::from("Normal")
+    }
+
     fn mode(&mut self) -> Option<Box<dyn Mode>> {
         self.mode.take()
     }
