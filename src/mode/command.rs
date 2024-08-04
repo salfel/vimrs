@@ -1,26 +1,39 @@
-use super::{command::Command, insert::Insert, Mode};
+use super::{normal::Normal, Mode};
 use crate::{display::Display, state::State};
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent},
-    layout::Rect,
+    prelude::Rect,
     Frame,
 };
 use std::rc::Rc;
 
-pub struct Normal {
+pub struct Command {
     mode: Option<Box<dyn Mode>>,
     state: Rc<State>,
+    command: String,
 }
 
-impl Normal {
+impl Command {
     pub fn new(state: Rc<State>) -> Self {
-        Normal { mode: None, state }
+        Command {
+            mode: None,
+            state,
+            command: String::new(),
+        }
+    }
+
+    fn execute_command(&mut self) {
+        self.exit_to_normal();
+    }
+
+    fn exit_to_normal(&mut self) {
+        self.mode = Some(Box::new(Normal::new(Rc::clone(&self.state))));
     }
 }
 
-impl Mode for Normal {
+impl Mode for Command {
     fn label(&self) -> String {
-        String::from("Normal")
+        String::from("Command")
     }
 
     fn mode(&mut self) -> Option<Box<dyn Mode>> {
@@ -29,8 +42,9 @@ impl Mode for Normal {
 
     fn handle_key(&mut self, event: KeyEvent) {
         match event.code {
-            KeyCode::Char('i') => self.mode = Some(Box::new(Insert::new(Rc::clone(&self.state)))),
-            KeyCode::Char(':') => self.mode = Some(Box::new(Command::new(Rc::clone(&self.state)))),
+            KeyCode::Esc => self.exit_to_normal(),
+            KeyCode::Char(char) => self.command.push(char),
+            KeyCode::Enter => self.execute_command(),
             _ => {}
         }
     }

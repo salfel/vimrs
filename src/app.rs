@@ -3,12 +3,12 @@ use std::{io, rc::Rc};
 use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
     layout::{Constraint, Direction, Layout},
-    widgets::{Paragraph, Widget},
+    widgets::Paragraph,
     Frame,
 };
 
-use crate::{display::Display, mode::Mode, state::State};
 use crate::{mode::normal::Normal, tui};
+use crate::{mode::Mode, state::State};
 
 pub struct App {
     exit: bool,
@@ -41,14 +41,13 @@ impl App {
         Ok(())
     }
 
-    fn render_frame(&self, frame: &mut Frame) {
+    fn render_frame(&mut self, frame: &mut Frame) {
         let layout = Layout::default()
             .direction(Direction::Vertical)
             .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
             .split(frame.size());
 
-        let display = Display::new(self.state.get_content());
-        frame.render_widget(display, layout[0]);
+        self.mode.render(frame, layout[0]);
 
         let show_mode = Paragraph::new(self.mode.label());
         frame.render_widget(show_mode, layout[1]);

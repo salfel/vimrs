@@ -1,10 +1,11 @@
-use std::rc::Rc;
-
-use ratatui::crossterm::event::{KeyCode, KeyEvent};
-
-use crate::state::State;
-
 use super::{normal::Normal, Mode};
+use crate::{display::Display, state::State};
+use ratatui::{
+    crossterm::event::{KeyCode, KeyEvent},
+    layout::Rect,
+    Frame,
+};
+use std::rc::Rc;
 
 pub struct Insert {
     state: Rc<State>,
@@ -35,5 +36,10 @@ impl Mode for Insert {
             KeyCode::Esc => self.exit = true,
             _ => {}
         }
+    }
+
+    fn render(&mut self, frame: &mut Frame, rect: Rect) {
+        let display = Display::new(self.state.get_content());
+        frame.render_widget(display, rect);
     }
 }
