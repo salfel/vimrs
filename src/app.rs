@@ -2,8 +2,6 @@ use std::{io, rc::Rc};
 
 use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
-    prelude::{Buffer, Rect, Widget},
-    widgets::{block::Title, Block},
     Frame,
 };
 
@@ -56,15 +54,5 @@ impl App {
         }
 
         Ok(())
-    }
-}
-
-impl Widget for App {
-    fn render(self, area: Rect, buf: &mut Buffer) {
-        let title = Title::from("test");
-
-        Block::bordered()
-            .title(title.alignment(ratatui::layout::Alignment::Center))
-            .render(area, buf);
     }
 }
