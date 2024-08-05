@@ -1,4 +1,7 @@
+use std::time::SystemTime;
+
 pub struct State {
+    error: Option<Error>,
     content: Vec<String>,
     pub exit: bool,
     pub cursor: Cursor,
@@ -10,6 +13,7 @@ impl State {
             content,
             exit: false,
             cursor: Cursor::default(),
+            error: None,
         }
     }
 
@@ -53,6 +57,28 @@ impl State {
 
         self.down();
         self.cursor.col = 0;
+    }
+
+    pub fn get_error(&self) -> &str {
+        match &self.error {
+            Some(error) => &error.message,
+            None => "",
+        }
+    }
+
+    pub fn add_error(&mut self, message: String) {
+        self.error = Some(Error::new(message));
+    }
+
+    pub fn clear_error(&mut self) {
+        if let Some(error) = &mut self.error {
+            let now = SystemTime::now();
+            if let Ok(duration) = now.duration_since(error.time) {
+                if duration.as_secs() >= 5 {
+                    self.error = None;
+                }
+            }
+        }
     }
 
     pub fn get_content(&self) -> &Vec<String> {
@@ -138,6 +164,20 @@ impl Cursor {
             }
         } else {
             self.col += 1;
+        }
+    }
+}
+
+pub struct Error {
+    time: SystemTime,
+    message: String,
+}
+
+impl Error {
+    fn new(message: String) -> Self {
+        Self {
+            time: SystemTime::now(),
+            message,
         }
     }
 }

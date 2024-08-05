@@ -82,7 +82,7 @@ impl EditorMode for CommandMode {
         frame.render_widget(command, layout[1]);
     }
 
-    fn get_state(&self) -> &State {
-        &self.state
+    fn get_state(&mut self) -> &mut State {
+        &mut self.state
     }
 }

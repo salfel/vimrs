@@ -20,7 +20,7 @@ pub trait EditorMode {
 
     fn render(&mut self, frame: &mut Frame, rect: Rect);
 
-    fn get_state(&self) -> &State;
+    fn get_state(&mut self) -> &mut State;
 }
 
 pub enum Mode {
@@ -68,7 +68,7 @@ impl EditorMode for Mode {
         }
     }
 
-    fn get_state(&self) -> &State {
+    fn get_state(&mut self) -> &mut State {
         match self {
             Self::Normal(mode) => mode.get_state(),
             Self::Insert(mode) => mode.get_state(),

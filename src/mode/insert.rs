@@ -49,7 +49,7 @@ impl EditorMode for InsertMode {
         frame.render_widget(display, rect);
     }
 
-    fn get_state(&self) -> &State {
-        &self.state
+    fn get_state(&mut self) -> &mut State {
+        &mut self.state
     }
 }
