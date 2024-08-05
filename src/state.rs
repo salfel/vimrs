@@ -24,20 +24,32 @@ impl State {
 
     pub fn pop_char(&mut self) {
         if let Some(row) = self.content.get_mut(self.cursor.row) {
-            if row.is_empty() && self.cursor.row != 0 {
-                self.content.remove(self.cursor.row);
+            if self.cursor.col == 0 && self.cursor.row != 0 {
+                let content = self.content.remove(self.cursor.row);
+                self.left();
+                self.content[self.cursor.row].push_str(&content);
+                self.right();
+
                 return;
             }
 
             row.remove(self.cursor.col - 1);
-            self.cursor.col -= 1;
+            self.left();
         }
     }
 
     pub fn new_row(&mut self) {
-        self.content.push(String::new());
+        let after = if self.cursor.col == 0 {
+            String::new()
+        } else {
+            self.content[self.cursor.row]
+                .drain(self.cursor.col - 1..)
+                .collect()
+        };
+        self.content.insert(self.cursor.row + 1, after);
 
-        self.cursor.down(&self.content);
+        self.down();
+        self.cursor.col = 0;
     }
 
     pub fn get_content(&self) -> &Vec<String> {
