@@ -1,31 +1,34 @@
-use super::{normal::Normal, Mode};
+use super::{normal::NormalMode, EditorMode, Mode};
 use crate::{display::Display, state::State};
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent},
     layout::Rect,
     Frame,
 };
-use std::{borrow::Borrow, cell::RefCell, rc::Rc};
 
-pub struct Insert {
-    state: Rc<RefCell<State>>,
+pub struct InsertMode {
+    state: State,
     exit: bool,
 }
 
-impl Insert {
-    pub fn new(state: Rc<RefCell<State>>) -> Self {
-        Insert { exit: false, state }
+impl InsertMode {
+    pub fn new(state: State) -> Self {
+        InsertMode { exit: false, state }
     }
 }
 
-impl Mode for Insert {
+impl EditorMode for InsertMode {
     fn label(&self) -> String {
         String::from("Insert")
     }
 
-    fn mode(&mut self) -> Option<Box<dyn Mode>> {
+    fn should_change_mode(&self) -> bool {
+        self.exit
+    }
+
+    fn mode(self) -> Option<Box<Mode>> {
         if self.exit {
-            Some(Box::new(Normal::new(Rc::clone(&self.state))))
+            Some(Box::new(Mode::Normal(NormalMode::new(self.state))))
         } else {
             None
         }
@@ -39,8 +42,11 @@ impl Mode for Insert {
     }
 
     fn render(&mut self, frame: &mut Frame, rect: Rect) {
-        let state = (*self.state).borrow();
-        let display = Display::new(state.get_content());
+        let display = Display::new(self.state.get_content());
         frame.render_widget(display, rect);
+    }
+
+    fn get_state(&self) -> &State {
+        &self.state
     }
 }

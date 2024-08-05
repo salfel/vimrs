@@ -1,4 +1,4 @@
-use std::{cell::RefCell, io, rc::Rc};
+use std::{io, mem};
 
 use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
@@ -7,32 +7,35 @@ use ratatui::{
     Frame,
 };
 
-use crate::{mode::normal::Normal, tui};
-use crate::{mode::Mode, state::State};
+use crate::{mode::EditorMode, state::State};
+use crate::{mode::Mode, tui};
 
 pub struct App {
-    state: Rc<RefCell<State>>,
     file: Option<String>,
-    mode: Box<dyn Mode>,
+    mode: Mode,
 }
 
 impl App {
     pub fn new() -> Self {
-        let state = Rc::new(RefCell::new(State::new(String::new())));
+        let state = State::new(String::new());
+
         App {
             file: None,
-            mode: Box::new(Normal::new(Rc::clone(&state))),
-            state,
+            mode: Mode::new(state),
         }
     }
 
     pub fn run(&mut self, terminal: &mut tui::Tui) -> io::Result<()> {
-        while !self.state.borrow().exit {
+        while !self.mode.get_state().exit {
             terminal.draw(|frame| self.render_frame(frame))?;
             self.handle_events()?;
 
-            if let Some(mode) = self.mode.mode() {
-                self.mode = mode;
+            if self.mode.should_change_mode() {
+                let mut tmp = Mode::new(State::new(String::new()));
+
+                mem::swap(&mut tmp, &mut self.mode);
+
+                self.mode = *tmp.mode().expect("mode was not some");
             }
         }
 

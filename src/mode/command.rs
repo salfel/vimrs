@@ -1,4 +1,4 @@
-use super::{normal::Normal, Mode};
+use super::{normal::NormalMode, EditorMode, Mode};
 use crate::{display::Display, state::State};
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent},
@@ -7,26 +7,25 @@ use ratatui::{
     widgets::Paragraph,
     Frame,
 };
-use std::{cell::RefCell, rc::Rc};
 
-pub struct Command {
-    mode: Option<Box<dyn Mode>>,
-    state: Rc<RefCell<State>>,
+pub struct CommandMode {
+    state: State,
     command: String,
+    exit: bool,
 }
 
-impl Command {
-    pub fn new(state: Rc<RefCell<State>>) -> Self {
-        Command {
-            mode: None,
+impl CommandMode {
+    pub fn new(state: State) -> Self {
+        CommandMode {
             state,
             command: String::new(),
+            exit: false,
         }
     }
 
     fn execute_command(&mut self) {
         match self.command.as_str() {
-            "q" => (*self.state).borrow_mut().exit = true,
+            "q" => self.state.exit = true,
             _ => {}
         }
         self.exit_to_normal();
@@ -39,17 +38,25 @@ impl Command {
     }
 
     fn exit_to_normal(&mut self) {
-        self.mode = Some(Box::new(Normal::new(Rc::clone(&self.state))));
+        self.exit = true;
     }
 }
 
-impl Mode for Command {
+impl EditorMode for CommandMode {
     fn label(&self) -> String {
         String::from("Command")
     }
 
-    fn mode(&mut self) -> Option<Box<dyn Mode>> {
-        self.mode.take()
+    fn should_change_mode(&self) -> bool {
+        self.exit
+    }
+
+    fn mode(self) -> Option<Box<Mode>> {
+        if self.exit {
+            Some(Box::new(Mode::Normal(NormalMode::new(self.state))))
+        } else {
+            None
+        }
     }
 
     fn handle_key(&mut self, event: KeyEvent) {
@@ -68,11 +75,14 @@ impl Mode for Command {
             .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
             .split(rect);
 
-        let state = (*self.state).borrow();
-        let display = Display::new(state.get_content());
+        let display = Display::new(self.state.get_content());
         frame.render_widget(display, layout[0]);
 
         let command = Paragraph::new(format!(":{}", self.command));
         frame.render_widget(command, layout[1]);
+    }
+
+    fn get_state(&self) -> &State {
+        &self.state
     }
 }
