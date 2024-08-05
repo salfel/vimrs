@@ -19,22 +19,26 @@ impl State {
             .get_mut(self.cursor.row)
             .expect("row was empty");
         row.insert(self.cursor.col, char);
-        self.cursor.col += 1;
+        self.right();
     }
 
-    pub fn pop_char(&mut self) {
+    pub fn remove_char(&mut self) {
         if let Some(row) = self.content.get_mut(self.cursor.row) {
-            if self.cursor.col == 0 && self.cursor.row != 0 {
-                let content = self.content.remove(self.cursor.row);
-                self.left();
-                self.content[self.cursor.row].push_str(&content);
-                self.right();
+            if self.cursor.col == 0 {
+                if self.cursor.row != 0 {
+                    let content = self.content.remove(self.cursor.row);
+                    self.left();
+                    self.content[self.cursor.row].push_str(&content);
+                    self.right();
+                }
 
                 return;
             }
 
             row.remove(self.cursor.col - 1);
-            self.left();
+            if self.cursor.col >= row.len() {
+                self.left();
+            }
         }
     }
 

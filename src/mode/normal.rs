@@ -44,6 +44,7 @@ impl EditorMode for NormalMode {
             KeyCode::Char('k') | KeyCode::Up => self.state.up(),
             KeyCode::Char('h') | KeyCode::Left => self.state.left(),
             KeyCode::Char('l') | KeyCode::Right => self.state.right(),
+            KeyCode::Char('x') => self.state.remove_char(),
             _ => {}
         }
     }
