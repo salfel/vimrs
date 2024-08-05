@@ -1,4 +1,4 @@
-use std::{io, mem};
+use std::{io, mem, time::Duration};
 
 use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
@@ -55,11 +55,13 @@ impl App {
     }
 
     fn handle_events(&mut self) -> io::Result<()> {
-        match event::read()? {
-            Event::Key(event) if event.kind == KeyEventKind::Press => {
-                self.mode.handle_key(event);
+        if event::poll(Duration::from_millis(10))? {
+            match event::read()? {
+                Event::Key(event) if event.kind == KeyEventKind::Press => {
+                    self.mode.handle_key(event);
+                }
+                _ => {}
             }
-            _ => {}
         }
 
         Ok(())
