@@ -1,5 +1,5 @@
 pub struct State {
-    content: String,
+    pub content: String,
     pub exit: bool,
 }
 
@@ -9,10 +9,6 @@ impl State {
             content,
             exit: false,
         }
-    }
-
-    pub fn get_content(&self) -> &str {
-        &self.content
     }
 
     pub fn exit(&mut self) {
