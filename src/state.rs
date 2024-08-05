@@ -29,7 +29,6 @@ impl State {
                     let content = self.content.remove(self.cursor.row);
                     self.left();
                     self.content[self.cursor.row].push_str(&content);
-                    self.right();
                 }
 
                 return;
@@ -47,7 +46,7 @@ impl State {
             String::new()
         } else {
             self.content[self.cursor.row]
-                .drain(self.cursor.col - 1..)
+                .drain(self.cursor.col..)
                 .collect()
         };
         self.content.insert(self.cursor.row + 1, after);
