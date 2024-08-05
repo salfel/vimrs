@@ -1,5 +1,3 @@
-use std::borrow::Borrow;
-
 use ratatui::{
     prelude::Color,
     style::Style,
