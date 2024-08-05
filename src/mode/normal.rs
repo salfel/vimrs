@@ -40,6 +40,10 @@ impl EditorMode for NormalMode {
         match event.code {
             KeyCode::Char('i') => self.mode = String::from("insert"),
             KeyCode::Char(':') => self.mode = String::from("command"),
+            KeyCode::Char('j') | KeyCode::Down => self.state.down(),
+            KeyCode::Char('k') | KeyCode::Up => self.state.up(),
+            KeyCode::Char('h') | KeyCode::Left => self.state.left(),
+            KeyCode::Char('l') | KeyCode::Right => self.state.right(),
             _ => {}
         }
     }

@@ -48,6 +48,22 @@ impl State {
         self.cursor.clone()
     }
 
+    pub fn down(&mut self) {
+        self.cursor.down(&self.content)
+    }
+
+    pub fn up(&mut self) {
+        self.cursor.up(&self.content)
+    }
+
+    pub fn left(&mut self) {
+        self.cursor.left(&self.content)
+    }
+
+    pub fn right(&mut self) {
+        self.cursor.right(&self.content)
+    }
+
     pub fn exit(&mut self) {
         self.exit = true;
     }
@@ -74,7 +90,7 @@ impl Cursor {
     }
 
     pub fn down(&mut self, content: &[String]) {
-        if self.row >= content.len() {
+        if self.row >= content.len() - 1 {
             return;
         }
 
@@ -83,6 +99,30 @@ impl Cursor {
         let row_length = content[self.row].len();
         if self.col > row_length {
             self.col = row_length;
+        }
+    }
+
+    pub fn left(&mut self, content: &[String]) {
+        if self.col == 0 {
+            if self.row != 0 {
+                self.row -= 1;
+
+                let row = &content[self.row];
+                self.col = if row.is_empty() { 0 } else { row.len() };
+            }
+        } else {
+            self.col -= 1;
+        }
+    }
+
+    pub fn right(&mut self, content: &[String]) {
+        if self.col == content[self.row].len() {
+            if self.row != content.len() - 1 {
+                self.row += 1;
+                self.col = 0;
+            }
+        } else {
+            self.col += 1;
         }
     }
 }

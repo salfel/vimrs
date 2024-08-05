@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+
 use ratatui::{
     prelude::Color,
     style::Style,
@@ -28,6 +30,9 @@ impl Widget for Display<'_> {
             if idx == cursor.row {
                 if row.is_empty() {
                     spans.push(Span::styled(" ", Style::default().bg(Color::Black)))
+                } else if cursor.col == 0 {
+                    spans.push(Span::styled(&row[0..1], Style::default().bg(Color::Black)));
+                    spans.push(Span::raw(&row[cursor.col + 1..row.len()]));
                 } else {
                     spans.push(Span::raw(&row[0..cursor.col - 1]));
                     spans.push(Span::styled(
