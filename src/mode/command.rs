@@ -75,7 +75,7 @@ impl EditorMode for CommandMode {
             .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
             .split(rect);
 
-        let display = Display::new(&self.state.content);
+        let display = Display::new(self.state.get_content());
         frame.render_widget(display, layout[0]);
 
         let command = Paragraph::new(format!(":{}", self.command));

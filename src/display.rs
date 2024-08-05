@@ -1,16 +1,16 @@
 use ratatui::widgets::{Paragraph, Widget};
 
-pub struct Display<'a> {
-    content: &'a str,
+pub struct Display {
+    content: String,
 }
 
-impl<'a> Display<'a> {
-    pub fn new(content: &'a str) -> Self {
+impl Display {
+    pub fn new(content: String) -> Self {
         Display { content }
     }
 }
 
-impl Widget for Display<'_> {
+impl Widget for Display {
     fn render(self, area: ratatui::prelude::Rect, buf: &mut ratatui::prelude::Buffer) {
         Paragraph::new(self.content).render(area, buf)
     }

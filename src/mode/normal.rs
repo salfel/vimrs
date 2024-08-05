@@ -45,7 +45,7 @@ impl EditorMode for NormalMode {
     }
 
     fn render(&mut self, frame: &mut Frame, rect: Rect) {
-        let display = Display::new(&self.state.content);
+        let display = Display::new(self.state.get_content());
         frame.render_widget(display, rect);
     }
 

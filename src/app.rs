@@ -17,7 +17,7 @@ pub struct App {
 
 impl App {
     pub fn new() -> Self {
-        let state = State::new(String::new());
+        let state = State::new(Vec::new());
 
         App {
             file: None,
@@ -31,7 +31,7 @@ impl App {
             self.handle_events()?;
 
             if self.mode.should_change_mode() {
-                let mut tmp = Mode::new(State::new(String::new()));
+                let mut tmp = Mode::new(State::new(Vec::new()));
 
                 mem::swap(&mut tmp, &mut self.mode);
 
