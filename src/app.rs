@@ -17,7 +17,7 @@ pub struct App {
 
 impl App {
     pub fn new() -> Self {
-        let state = State::new(Vec::new());
+        let state = State::new(vec![String::new()]);
 
         App {
             file: None,
