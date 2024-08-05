@@ -11,7 +11,6 @@ use ratatui::{
 use crate::{mode::EditorMode, state::State};
 use crate::{mode::Mode, tui};
 
-const POLLING: u64 = 10;
 
 pub struct App {
     //file: Option<String>,
@@ -69,7 +68,7 @@ impl App {
     }
 
     fn handle_events(&mut self) -> io::Result<()> {
-        if event::poll(Duration::from_millis(POLLING))? {
+        if event::poll(Duration::from_millis(10))? {
             match event::read()? {
                 Event::Key(event) if event.kind == KeyEventKind::Press => {
                     self.mode.handle_key(event);
