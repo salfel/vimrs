@@ -37,6 +37,12 @@ impl State {
         }
     }
 
+    pub fn new_row(&mut self) {
+        self.content.push(String::new());
+        self.cursor.row += 1;
+        self.cursor.col = 0;
+    }
+
     pub fn get_content(&self) -> String {
         self.content.join("\n")
     }
