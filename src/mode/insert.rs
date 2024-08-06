@@ -45,7 +45,7 @@ impl EditorMode for InsertMode {
     }
 
     fn render(&mut self, frame: &mut Frame, rect: Rect) {
-        let display = Display::new(&self.state);
+        let display = Display::new(&self.state, true);
         frame.render_widget(display, rect);
     }
 
