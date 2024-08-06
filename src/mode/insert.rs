@@ -38,7 +38,7 @@ impl EditorMode for InsertMode {
         match event.code {
             KeyCode::Esc => self.exit = true,
             KeyCode::Char(char) => self.state.write_char(char),
-            KeyCode::Backspace => self.state.remove_char(),
+            KeyCode::Backspace => self.state.pop_char(),
             KeyCode::Enter => self.state.new_row(),
             _ => {}
         };

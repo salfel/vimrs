@@ -17,6 +17,26 @@ impl State {
         }
     }
 
+    pub fn pop_char(&mut self) {
+        if let Some(line) = self.content.get_mut(self.cursor.row) {
+            if self.cursor.col == 0 {
+                if self.cursor.row != 0 {
+                    let content = self.content.remove(self.cursor.row);
+                    self.left();
+
+                    if let Some(prev_line) = self.content.get_mut(self.cursor.row) {
+                        prev_line.push_str(&content);
+                    }
+                }
+
+                return;
+            }
+
+            line.remove(self.cursor.col - 1);
+            self.left();
+        }
+    }
+
     pub fn write_char(&mut self, char: char) {
         let row = self
             .content
@@ -28,17 +48,11 @@ impl State {
 
     pub fn remove_char(&mut self) {
         if let Some(row) = self.content.get_mut(self.cursor.row) {
-            if self.cursor.col == 0 {
-                if self.cursor.row != 0 {
-                    let content = self.content.remove(self.cursor.row);
-                    self.left();
-                    self.content[self.cursor.row].push_str(&content);
-                }
-
+            if self.cursor.col >= row.len() {
                 return;
             }
 
-            row.remove(self.cursor.col - 1);
+            row.remove(self.cursor.col);
             if self.cursor.col >= row.len() {
                 self.left();
             }

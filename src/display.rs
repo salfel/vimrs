@@ -9,15 +9,12 @@ use crate::state::State;
 
 pub struct Display<'a> {
     state: &'a State,
-    after_cursor: bool,
+    insert: bool,
 }
 
 impl<'a> Display<'a> {
-    pub fn new(state: &'a State, after_cursor: bool) -> Self {
-        Display {
-            state,
-            after_cursor,
-        }
+    pub fn new(state: &'a State, insert: bool) -> Self {
+        Display { state, insert }
     }
 }
 
@@ -30,30 +27,35 @@ impl Widget for Display<'_> {
         for (idx, row) in content.iter().enumerate() {
             let mut spans = vec![];
             if idx == cursor.row {
-                if self.after_cursor {
-                    if cursor.col == row.len() {
-                        spans.push(Span::raw(&row[0..cursor.col]));
-                        spans.push(Span::styled(" ", Style::default().bg(Color::Black)));
+                if !self.insert {
+                    if row.is_empty() {
+                        spans.push(Span::styled(" ", Style::default().on_black()));
+                    } else if cursor.col == row.len() {
+                        spans.push(Span::raw(&row[..cursor.col - 1]));
+                        spans.push(Span::styled(
+                            &row[cursor.col - 1..],
+                            Style::default().on_black(),
+                        ));
                     } else {
-                        spans.push(Span::raw(&row[0..cursor.col]));
+                        spans.push(Span::raw(&row[..cursor.col]));
                         spans.push(Span::styled(
                             &row[cursor.col..cursor.col + 1],
-                            Style::default().bg(Color::Black),
+                            Style::default().on_black(),
                         ));
-                        spans.push(Span::raw(&row[cursor.col + 1..row.len()]));
+                        spans.push(Span::raw(&row[cursor.col + 1..]));
                     }
                 } else if row.is_empty() {
-                    spans.push(Span::styled(" ", Style::default().on_black()))
-                } else if cursor.col == 0 {
-                    spans.push(Span::styled(&row[0..1], Style::default().on_black()));
-                    spans.push(Span::raw(&row[1..]));
+                    spans.push(Span::styled(" ", Style::default().on_black()));
+                } else if cursor.col == row.len() {
+                    spans.push(Span::raw(&row[..cursor.col]));
+                    spans.push(Span::styled(" ", Style::default().on_black()));
                 } else {
-                    spans.push(Span::raw(&row[0..cursor.col - 1]));
+                    spans.push(Span::raw(&row[..cursor.col]));
                     spans.push(Span::styled(
-                        &row[cursor.col - 1..cursor.col],
+                        &row[cursor.col..cursor.col + 1],
                         Style::default().on_black(),
                     ));
-                    spans.push(Span::raw(&row[cursor.col..]));
+                    spans.push(Span::raw(&row[cursor.col + 1..]));
                 }
             } else {
                 spans.push(Span::raw(row));
