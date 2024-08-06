@@ -36,7 +36,10 @@ impl EditorMode for InsertMode {
 
     fn handle_key(&mut self, event: KeyEvent) {
         match event.code {
-            KeyCode::Esc => self.exit = true,
+            KeyCode::Esc => {
+                self.state.left();
+                self.exit = true
+            }
             KeyCode::Char(char) => self.state.write_char(char),
             KeyCode::Backspace => self.state.pop_char(),
             KeyCode::Enter => self.state.new_row(),
@@ -45,6 +48,8 @@ impl EditorMode for InsertMode {
     }
 
     fn render(&mut self, frame: &mut Frame, rect: Rect) {
+        self.state
+            .print(format!("cursor: {}", self.state.cursor.col));
         let display = Display::new(&self.state, true);
         frame.render_widget(display, rect);
     }

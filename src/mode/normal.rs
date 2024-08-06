@@ -38,7 +38,10 @@ impl EditorMode for NormalMode {
 
     fn handle_key(&mut self, event: KeyEvent) {
         match event.code {
-            KeyCode::Char('i') => self.mode = String::from("insert"),
+            KeyCode::Char('i') => {
+                self.state.left();
+                self.mode = String::from("insert")
+            }
             KeyCode::Char(':') => self.mode = String::from("command"),
             KeyCode::Char('j') | KeyCode::Down => self.state.down(),
             KeyCode::Char('k') | KeyCode::Up => self.state.up(),
@@ -50,6 +53,8 @@ impl EditorMode for NormalMode {
     }
 
     fn render(&mut self, frame: &mut Frame, rect: Rect) {
+        self.state
+            .print(format!("cursor: {}", self.state.cursor.col));
         let display = Display::new(&self.state, false);
         frame.render_widget(display, rect);
     }
