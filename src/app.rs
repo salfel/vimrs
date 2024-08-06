@@ -8,21 +8,41 @@ use ratatui::{
     Frame,
 };
 
-use crate::{mode::EditorMode, state::State};
+use crate::{filesystem::FileSystem, mode::EditorMode, state::State};
 use crate::{mode::Mode, tui};
 
-
 pub struct App {
-    //file: Option<String>,
+    file: Option<String>,
     mode: Mode,
 }
 
 impl App {
-    pub fn new() -> Self {
-        let state = State::new(vec![String::new()]);
+    pub fn new(args: Vec<String>) -> Self {
+        let mut error = None;
+        let file = args.get(1);
+        let contents = match file {
+            Some(path) => match FileSystem::read_file(path.to_string()) {
+                Ok(contents) => contents,
+                Err(message) => {
+                    error = Some(message);
+                    String::new()
+                }
+            },
+            None => String::new(),
+        };
+        let mut state = State::new(
+            contents
+                .split("\n")
+                .map(|line| line.to_string())
+                .collect::<Vec<String>>(),
+        );
+
+        if let Some(message) = error {
+            state.add_error(message.to_string());
+        }
 
         App {
-            //file: None,
+            file: file.cloned(),
             mode: Mode::new(state),
         }
     }
