@@ -79,7 +79,12 @@ impl App {
             .constraints(vec![Constraint::Percentage(50), Constraint::Percentage(50)])
             .split(layout[1]);
 
-        let show_mode = Paragraph::new(self.mode.label());
+        let label = if self.mode.label().is_empty() {
+            String::new()
+        } else {
+            format!("-- {} --", self.mode.label())
+        };
+        let show_mode = Paragraph::new(format!("{}   {}", label, self.mode.get_state().message));
         frame.render_widget(show_mode, bottom_layout[0]);
 
         let error = self.mode.get_state().get_error();

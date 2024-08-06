@@ -1,6 +1,7 @@
 use std::time::SystemTime;
 
 pub struct State {
+    pub message: String,
     error: Option<Error>,
     content: Vec<String>,
     pub exit: bool,
@@ -10,6 +11,7 @@ pub struct State {
 impl State {
     pub fn new(content: Vec<String>) -> Self {
         Self {
+            message: String::new(),
             content,
             exit: false,
             cursor: Cursor::default(),
@@ -117,6 +119,10 @@ impl State {
 
     pub fn right(&mut self) {
         self.cursor.right(&self.content)
+    }
+
+    pub fn print(&mut self, message: String) {
+        self.message = message
     }
 
     pub fn exit(&mut self) {

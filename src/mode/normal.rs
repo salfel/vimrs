@@ -21,7 +21,7 @@ impl NormalMode {
 
 impl EditorMode for NormalMode {
     fn label(&self) -> String {
-        String::from("Normal")
+        String::new()
     }
 
     fn should_change_mode(&self) -> bool {
