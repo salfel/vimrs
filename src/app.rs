@@ -2,6 +2,7 @@ use std::{io, time::Duration};
 
 use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
+    layout::{Constraint, Direction, Layout},
     widgets::Paragraph,
     Frame,
 };
@@ -13,6 +14,7 @@ pub struct App {
     exit: bool,
     buffers: Vec<Buffer>,
     errors: Vec<String>,
+    active_buffer: usize,
 }
 
 impl App {
@@ -26,6 +28,7 @@ impl App {
             exit: false,
             buffers: vec![buffer],
             errors,
+            active_buffer: 0,
         }
     }
 
@@ -33,15 +36,29 @@ impl App {
         while !self.exit {
             terminal.draw(|frame| self.render_frame(frame))?;
             self.handle_events()?;
+
+            if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
+                buffer.change_mode();
+            }
         }
 
         Ok(())
     }
 
     fn render_frame(&mut self, frame: &mut Frame) {
+        let layout = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
+            .split(frame.size());
+
         let content = self.buffers.first().map_or("", |buffer| &buffer.content);
         let paragraph = Paragraph::new(content);
-        frame.render_widget(paragraph, frame.size());
+        frame.render_widget(paragraph, layout[0]);
+
+        let bottom_layout = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints(vec![Constraint::Percentage(50); 2])
+            .split(layout[1]);
     }
 
     fn handle_events(&mut self) -> io::Result<()> {
