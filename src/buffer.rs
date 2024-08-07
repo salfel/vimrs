@@ -10,8 +10,8 @@ use crate::mode::{
 pub type State = Rc<RefCell<BufferState>>;
 
 pub struct BufferState {
-    content: Dirty<Vec<String>>,
-    cursor: Cursor,
+    pub content: Dirty<Vec<String>>,
+    pub cursor: Cursor,
 }
 
 impl BufferState {
@@ -21,6 +21,30 @@ impl BufferState {
         BufferState {
             content,
             cursor: Cursor::default(),
+        }
+    }
+
+    pub fn left(&mut self) {
+        if self.cursor.col == 0 {
+            if self.cursor.row != 0 {
+                let prev_row = &self.content.data[self.cursor.row - 1];
+                self.cursor.col = prev_row.len() - 1;
+                self.cursor.row -= 1;
+            }
+        } else {
+            self.cursor.col -= 1;
+        }
+    }
+
+    pub fn right(&mut self) {
+        let current_row = &self.content.data[self.cursor.row];
+        if self.cursor.col == current_row.len() {
+            if self.cursor.row != self.content.data.len() - 1 {
+                self.cursor.row += 1;
+                self.cursor.col = 0;
+            }
+        } else {
+            self.cursor.col += 1;
         }
     }
 
@@ -105,8 +129,8 @@ impl<T> Dirty<T> {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Clone, Copy)]
 pub struct Cursor {
-    row: u32,
-    col: u32,
+    pub row: usize,
+    pub col: usize,
 }

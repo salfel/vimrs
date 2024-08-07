@@ -24,6 +24,33 @@ impl InsertMode {
             state,
         }
     }
+
+    fn write_char(&mut self, char: char) {
+        let mut state = (*self.state).borrow_mut();
+        let cursor = state.cursor;
+
+        if let Some(line) = state.content.data.get_mut(cursor.row) {
+            line.insert(cursor.col, char);
+            state.right();
+        }
+    }
+
+    fn pop_char(&mut self) {
+        let mut state = (*self.state).borrow_mut();
+        let cursor = state.cursor;
+
+        if let Some(line) = state.content.data.get_mut(cursor.row) {
+            if line.is_empty() {
+                return;
+            }
+
+            line.remove(cursor.col - 1);
+
+            if cursor.col > line.len() {
+                state.left();
+            }
+        }
+    }
 }
 
 impl EditorMode for InsertMode {
@@ -35,9 +62,10 @@ impl EditorMode for InsertMode {
         self.mode
     }
 
-    #[allow(clippy::single_match)]
     fn handle_events(&mut self, event: KeyEvent) {
         match event.code {
+            KeyCode::Char(char) => self.write_char(char),
+            KeyCode::Backspace => self.pop_char(),
             KeyCode::Esc => self.mode = Normal,
             _ => {}
         }
