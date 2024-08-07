@@ -38,8 +38,9 @@ impl EditorMode for NormalMode {
 
     fn handle_key(&mut self, event: KeyEvent) {
         match event.code {
-            KeyCode::Char('i') => {
-                self.state.left();
+            KeyCode::Char('i') => self.mode = String::from("insert"),
+            KeyCode::Char('a') => {
+                self.state.right();
                 self.mode = String::from("insert")
             }
             KeyCode::Char(':') => self.mode = String::from("command"),

@@ -75,16 +75,6 @@ impl State {
         self.cursor.col = 0;
     }
 
-    pub fn trim_row(&mut self) {
-        if let Some(row) = self.content.get_mut(self.cursor.row) {
-            *row = row.trim().to_string();
-
-            if self.cursor.col == row.len() {
-                self.left();
-            }
-        }
-    }
-
     pub fn get_error(&self) -> &str {
         match &self.error {
             Some(error) => &error.message,
