@@ -50,12 +50,8 @@ impl State {
 
     pub fn remove_char(&mut self) {
         if let Some(row) = self.content.get_mut(self.cursor.row) {
-            if self.cursor.col > row.len() - 1 {
-                return;
-            }
-
             row.remove(self.cursor.col);
-            if self.cursor.col <= row.len() {
+            if self.cursor.col == row.len() {
                 self.left();
             }
         }
