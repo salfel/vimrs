@@ -5,7 +5,7 @@ use insert::InsertMode;
 use normal::NormalMode;
 use ratatui::{crossterm::event::KeyEvent, layout::Rect, Frame};
 
-use crate::buffer::Dirty;
+use crate::buffer::{Content, Dirty};
 
 pub mod command;
 pub mod insert;
@@ -38,7 +38,7 @@ pub enum Mode {
 }
 
 impl Mode {
-    pub fn new(mode: ModeType, content: Rc<RefCell<Dirty<String>>>) -> Self {
+    pub fn new(mode: ModeType, content: Content) -> Self {
         match mode {
             ModeType::Normal => Mode::Normal(NormalMode::new(content)),
             ModeType::Insert => Mode::Insert(InsertMode::new(content)),

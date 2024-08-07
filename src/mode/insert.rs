@@ -1,5 +1,3 @@
-use std::{cell::RefCell, rc::Rc};
-
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent},
     prelude::Rect,
@@ -7,7 +5,7 @@ use ratatui::{
     Frame,
 };
 
-use crate::buffer::Dirty;
+use crate::buffer::Content;
 
 use super::{
     EditorMode,
@@ -16,11 +14,11 @@ use super::{
 
 pub struct InsertMode {
     mode: ModeType,
-    content: Rc<RefCell<Dirty<String>>>,
+    content: Content,
 }
 
 impl InsertMode {
-    pub fn new(content: Rc<RefCell<Dirty<String>>>) -> Self {
+    pub fn new(content: Content) -> Self {
         Self {
             mode: ModeType::Insert,
             content,

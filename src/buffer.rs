@@ -7,6 +7,8 @@ use crate::mode::{
     ModeType::{Exit, Normal},
 };
 
+pub type Content = Rc<RefCell<Dirty<String>>>;
+
 pub struct Dirty<T> {
     pub data: T,
     pub dirty: bool,
@@ -20,7 +22,7 @@ impl<T> Dirty<T> {
 
 pub struct Buffer {
     name: String,
-    pub content: Rc<RefCell<Dirty<String>>>,
+    pub content: Content,
     pub mode: Mode,
 }
 
