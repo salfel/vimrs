@@ -6,7 +6,7 @@ use ratatui::{
     Frame,
 };
 
-use crate::buffer::Content;
+use crate::buffer::State;
 
 use super::{
     EditorMode,
@@ -16,15 +16,15 @@ use super::{
 pub struct CommandMode {
     mode: ModeType,
     keys: String,
-    content: Content,
+    state: State,
 }
 
 impl CommandMode {
-    pub fn new(content: Content) -> Self {
+    pub fn new(state: State) -> Self {
         Self {
             mode: ModeType::Command,
             keys: String::new(),
-            content,
+            state,
         }
     }
 
@@ -71,8 +71,8 @@ impl EditorMode for CommandMode {
             .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
             .split(area);
 
-        let content = (*self.content).borrow_mut();
-        let paragraph = Paragraph::new(content.data.as_str());
+        let state = (*self.state).borrow_mut();
+        let paragraph = Paragraph::new(state.get_lines_from_content());
         frame.render_widget(paragraph, layout[0]);
 
         let command = format!(":{}", self.keys);

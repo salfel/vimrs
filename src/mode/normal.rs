@@ -5,7 +5,7 @@ use ratatui::{
     Frame,
 };
 
-use crate::buffer::Content;
+use crate::buffer::State;
 
 use super::{
     EditorMode,
@@ -15,15 +15,15 @@ use super::{
 pub struct NormalMode {
     mode: ModeType,
     keys: String,
-    content: Content,
+    state: State,
 }
 
 impl NormalMode {
-    pub fn new(content: Content) -> Self {
+    pub fn new(state: State) -> Self {
         Self {
             mode: ModeType::Normal,
             keys: String::new(),
-            content,
+            state,
         }
     }
 }
@@ -58,8 +58,8 @@ impl EditorMode for NormalMode {
     }
 
     fn render(&self, frame: &mut Frame, area: Rect) {
-        let content = (*self.content).borrow_mut();
-        let paragraph = Paragraph::new(content.data.as_str());
+        let state = (*self.state).borrow_mut();
+        let paragraph = Paragraph::new(state.get_lines_from_content());
         frame.render_widget(paragraph, area);
     }
 }

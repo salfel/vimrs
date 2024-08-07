@@ -1,11 +1,9 @@
-use std::{cell::RefCell, rc::Rc};
-
 use command::CommandMode;
 use insert::InsertMode;
 use normal::NormalMode;
 use ratatui::{crossterm::event::KeyEvent, layout::Rect, Frame};
 
-use crate::buffer::{Content, Dirty};
+use crate::buffer::State;
 
 pub mod command;
 pub mod insert;
@@ -38,11 +36,11 @@ pub enum Mode {
 }
 
 impl Mode {
-    pub fn new(mode: ModeType, content: Content) -> Self {
+    pub fn new(mode: ModeType, state: State) -> Self {
         match mode {
-            ModeType::Normal => Mode::Normal(NormalMode::new(content)),
-            ModeType::Insert => Mode::Insert(InsertMode::new(content)),
-            ModeType::Command => Mode::Command(CommandMode::new(content)),
+            ModeType::Normal => Mode::Normal(NormalMode::new(state)),
+            ModeType::Insert => Mode::Insert(InsertMode::new(state)),
+            ModeType::Command => Mode::Command(CommandMode::new(state)),
             ModeType::Exit => panic!("exit should never be passed in here"),
         }
     }
