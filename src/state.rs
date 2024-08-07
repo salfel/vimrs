@@ -3,7 +3,7 @@ use std::time::SystemTime;
 pub struct State {
     pub message: String,
     error: Option<Error>,
-    content: Vec<String>,
+    pub content: Vec<String>,
     pub exit: bool,
     pub cursor: Cursor,
 }
@@ -45,15 +45,6 @@ impl State {
 
             line.remove(self.cursor.col - 1);
             self.left();
-        }
-    }
-
-    pub fn remove_char(&mut self) {
-        if let Some(row) = self.content.get_mut(self.cursor.row) {
-            row.remove(self.cursor.col);
-            if self.cursor.col == row.len() {
-                self.left();
-            }
         }
     }
 
