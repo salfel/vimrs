@@ -1,4 +1,4 @@
-use std::{fmt::write, io, time::Duration};
+use std::{io, time::Duration};
 
 use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
@@ -49,8 +49,8 @@ impl App {
             .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
             .split(frame.size());
 
-        let content = self.buffers.first().map_or("", |buffer| &buffer.content);
-        let paragraph = Paragraph::new(content);
+        let content = (*self.buffers[self.active_buffer].content).borrow_mut();
+        let paragraph = Paragraph::new(content.data.as_str());
         frame.render_widget(paragraph, layout[0]);
 
         let bottom_layout = Layout::default()

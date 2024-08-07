@@ -1,6 +1,10 @@
+use std::{cell::RefCell, rc::Rc};
+
 use command::CommandMode;
 use normal::NormalMode;
 use ratatui::crossterm::event::KeyEvent;
+
+use crate::buffer::Dirty;
 
 pub mod command;
 pub mod normal;
@@ -28,10 +32,10 @@ pub enum Mode {
 }
 
 impl Mode {
-    pub fn new(mode: ModeType) -> Self {
+    pub fn new(mode: ModeType, content: Rc<RefCell<Dirty<String>>>) -> Self {
         match mode {
-            ModeType::Normal => Mode::Normal(NormalMode::new()),
-            ModeType::Command => Mode::Command(CommandMode::new()),
+            ModeType::Normal => Mode::Normal(NormalMode::new(content)),
+            ModeType::Command => Mode::Command(CommandMode::new(content)),
             ModeType::Exit => panic!("exit should never be passed in here"),
         }
     }

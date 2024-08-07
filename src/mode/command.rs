@@ -1,4 +1,8 @@
+use std::{cell::RefCell, rc::Rc};
+
 use ratatui::crossterm::event::{KeyCode, KeyEvent};
+
+use crate::buffer::Dirty;
 
 use super::{
     EditorMode,
@@ -8,13 +12,15 @@ use super::{
 pub struct CommandMode {
     mode: ModeType,
     keys: String,
+    content: Rc<RefCell<Dirty<String>>>,
 }
 
 impl CommandMode {
-    pub fn new() -> Self {
+    pub fn new(content: Rc<RefCell<Dirty<String>>>) -> Self {
         Self {
             mode: ModeType::Command,
             keys: String::new(),
+            content,
         }
     }
 

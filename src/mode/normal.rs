@@ -1,17 +1,23 @@
+use std::{cell::RefCell, rc::Rc};
+
 use ratatui::crossterm::event::{KeyCode, KeyEvent};
+
+use crate::buffer::Dirty;
 
 use super::{EditorMode, ModeType};
 
 pub struct NormalMode {
     mode: ModeType,
     keys: String,
+    content: Rc<RefCell<Dirty<String>>>,
 }
 
 impl NormalMode {
-    pub fn new() -> Self {
+    pub fn new(content: Rc<RefCell<Dirty<String>>>) -> Self {
         Self {
             mode: ModeType::Normal,
             keys: String::new(),
+            content,
         }
     }
 }
