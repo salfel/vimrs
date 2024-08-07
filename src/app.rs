@@ -1,103 +1,36 @@
-use std::{io, mem, time::Duration};
+use std::{io, time::Duration};
 
 use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
-    layout::{Constraint, Direction, Layout},
-    style::{Color, Stylize},
-    widgets::Paragraph,
     Frame,
 };
 
-use crate::{filesystem::FileSystem, mode::EditorMode, state::State};
-use crate::{mode::Mode, tui};
+use crate::tui;
 
 pub struct App {
-    file: Option<String>,
-    mode: Mode,
+    exit: bool,
 }
 
 impl App {
     pub fn new(args: Vec<String>) -> Self {
-        let mut error = None;
-        let file = args.get(1);
-        let contents = match file {
-            Some(path) => match FileSystem::read_file(path.to_string()) {
-                Ok(contents) => contents,
-                Err(message) => {
-                    error = Some(message);
-                    String::new()
-                }
-            },
-            None => String::new(),
-        };
-        let mut state = State::new(
-            contents
-                .split("\n")
-                .map(|line| line.to_string())
-                .collect::<Vec<String>>(),
-        );
-
-        if let Some(message) = error {
-            state.add_error(message.to_string());
-        }
-
-        App {
-            file: file.cloned(),
-            mode: Mode::new(state),
-        }
+        App { exit: false }
     }
 
     pub fn run(&mut self, terminal: &mut tui::Tui) -> io::Result<()> {
-        while !self.mode.get_state().exit {
+        while !self.exit {
             terminal.draw(|frame| self.render_frame(frame))?;
             self.handle_events()?;
-
-            self.mode.get_state().clear_error();
-
-            if self.mode.should_change_mode() {
-                let mut tmp = Mode::new(State::new(Vec::new()));
-
-                mem::swap(&mut tmp, &mut self.mode);
-
-                self.mode = *tmp.mode().expect("mode was not some");
-            }
         }
 
         Ok(())
     }
 
-    fn render_frame(&mut self, frame: &mut Frame) {
-        let layout = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
-            .split(frame.size());
-
-        self.mode.render(frame, layout[0]);
-
-        let bottom_layout = Layout::default()
-            .direction(Direction::Horizontal)
-            .constraints(vec![Constraint::Percentage(50), Constraint::Percentage(50)])
-            .split(layout[1]);
-
-        let label = if self.mode.label().is_empty() {
-            String::new()
-        } else {
-            format!("-- {} --", self.mode.label())
-        };
-        let show_mode = Paragraph::new(format!("{}   {}", label, self.mode.get_state().message));
-        frame.render_widget(show_mode, bottom_layout[0]);
-
-        let error = self.mode.get_state().get_error();
-        let show_error = Paragraph::new(error).fg(Color::Red).right_aligned();
-        frame.render_widget(show_error, bottom_layout[1]);
-    }
+    fn render_frame(&mut self, frame: &mut Frame) {}
 
     fn handle_events(&mut self) -> io::Result<()> {
         if event::poll(Duration::from_millis(10))? {
             match event::read()? {
-                Event::Key(event) if event.kind == KeyEventKind::Press => {
-                    self.mode.handle_key(event);
-                }
+                Event::Key(event) if event.kind == KeyEventKind::Press => {}
                 _ => {}
             }
         }

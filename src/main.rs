@@ -1,8 +1,4 @@
 mod app;
-mod display;
-mod filesystem;
-mod mode;
-mod state;
 mod tui;
 
 use app::App;
