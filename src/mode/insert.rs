@@ -43,6 +43,10 @@ impl EditorMode for InsertMode {
             KeyCode::Char(char) => self.state.write_char(char),
             KeyCode::Backspace => self.state.pop_char(),
             KeyCode::Enter => self.state.new_row(),
+            KeyCode::Down => self.state.down(),
+            KeyCode::Up => self.state.up(),
+            KeyCode::Left => self.state.left(),
+            KeyCode::Right => self.state.right(),
             _ => {}
         };
     }
