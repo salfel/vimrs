@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent},
-    layout::Rect,
+    prelude::Rect,
     widgets::Paragraph,
     Frame,
 };
@@ -11,52 +11,38 @@ use crate::buffer::Dirty;
 
 use super::{
     EditorMode,
-    ModeType::{self, Command, Insert},
+    ModeType::{self, Normal},
 };
 
-pub struct NormalMode {
+pub struct InsertMode {
     mode: ModeType,
-    keys: String,
     content: Rc<RefCell<Dirty<String>>>,
 }
 
-impl NormalMode {
+impl InsertMode {
     pub fn new(content: Rc<RefCell<Dirty<String>>>) -> Self {
         Self {
-            mode: ModeType::Normal,
-            keys: String::new(),
+            mode: ModeType::Insert,
             content,
         }
     }
 }
 
-impl NormalMode {
-    fn handle_keybindings(&mut self) {
-        match self.keys.as_str() {
-            ":" => self.mode = Command,
-            "i" => self.mode = Insert,
-            _ => return,
-        }
-
-        self.keys = String::new();
-    }
-}
-
-impl EditorMode for NormalMode {
+impl EditorMode for InsertMode {
     fn label(&self) -> String {
-        String::from("Normal")
+        String::from("Insert")
     }
 
     fn new_type(&self) -> ModeType {
         self.mode
     }
 
+    #[allow(clippy::single_match)]
     fn handle_events(&mut self, event: KeyEvent) {
-        if let KeyCode::Char(char) = event.code {
-            self.keys.push(char);
+        match event.code {
+            KeyCode::Esc => self.mode = Normal,
+            _ => {}
         }
-
-        self.handle_keybindings();
     }
 
     fn render(&self, frame: &mut Frame, area: Rect) {
