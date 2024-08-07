@@ -28,6 +28,10 @@ impl NormalMode {
 }
 
 impl EditorMode for NormalMode {
+    fn label(&self) -> String {
+        String::from("Normal")
+    }
+
     fn new_type(&self) -> ModeType {
         self.mode
     }

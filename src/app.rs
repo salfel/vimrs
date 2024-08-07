@@ -1,4 +1,4 @@
-use std::{io, time::Duration};
+use std::{fmt::write, io, time::Duration};
 
 use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
@@ -7,11 +7,10 @@ use ratatui::{
     Frame,
 };
 
-use crate::buffer::Buffer;
 use crate::tui;
+use crate::{buffer::Buffer, mode::EditorMode};
 
 pub struct App {
-    exit: bool,
     buffers: Vec<Buffer>,
     errors: Vec<String>,
     active_buffer: usize,
@@ -25,7 +24,6 @@ impl App {
         let buffer = Buffer::new(filename, &mut errors);
 
         App {
-            exit: false,
             buffers: vec![buffer],
             errors,
             active_buffer: 0,
@@ -33,19 +31,19 @@ impl App {
     }
 
     pub fn run(&mut self, terminal: &mut tui::Tui) -> io::Result<()> {
-        while !self.exit {
+        while !self.should_exit() {
             terminal.draw(|frame| self.render_frame(frame))?;
             self.handle_events()?;
 
-            if let Some(buffer) = self.buffers.get_mut(self.active_buffer) {
-                buffer.change_mode();
-            }
+            self.buffers[self.active_buffer].change_mode();
         }
 
         Ok(())
     }
 
     fn render_frame(&mut self, frame: &mut Frame) {
+        let current_buffer = &self.buffers[self.active_buffer];
+
         let layout = Layout::default()
             .direction(Direction::Vertical)
             .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
@@ -59,17 +57,33 @@ impl App {
             .direction(Direction::Horizontal)
             .constraints(vec![Constraint::Percentage(50); 2])
             .split(layout[1]);
+
+        let label = format!("-- {} --", current_buffer.mode.label());
+
+        let paragraph = Paragraph::new(label);
+        frame.render_widget(paragraph, bottom_layout[0]);
     }
 
     fn handle_events(&mut self) -> io::Result<()> {
         if event::poll(Duration::from_millis(10))? {
             match event::read()? {
-                Event::Key(event) if event.kind == KeyEventKind::Press => {}
+                Event::Key(event) if event.kind == KeyEventKind::Press => {
+                    let current_buffer = &mut self.buffers[self.active_buffer];
+                    current_buffer.mode.handle_events(event);
+                }
                 _ => {}
             }
         }
 
         Ok(())
+    }
+
+    fn should_exit(&self) -> bool {
+        if let Some(buffer) = self.buffers.get(self.active_buffer) {
+            buffer.should_exit()
+        } else {
+            true
+        }
     }
 
     fn get_error(&mut self) -> &str {

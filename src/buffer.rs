@@ -1,12 +1,15 @@
 use std::{fs, io};
 
-use crate::mode::{EditorMode, Mode, ModeType::Normal};
+use crate::mode::{
+    EditorMode, Mode,
+    ModeType::{Exit, Normal},
+};
 
 pub struct Buffer {
     name: String,
     pub content: String,
     dirty: bool,
-    mode: Mode,
+    pub mode: Mode,
 }
 
 impl Buffer {
@@ -32,9 +35,13 @@ impl Buffer {
     }
 
     pub fn change_mode(&mut self) {
-        if self.mode.should_change() {
+        if self.mode.should_change() && !self.should_exit() {
             self.mode = Mode::new(self.mode.new_type());
         }
+    }
+
+    pub fn should_exit(&self) -> bool {
+        self.mode.new_type() == Exit
     }
 
     pub fn get_name(&self) -> &String {

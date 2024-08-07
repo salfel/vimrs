@@ -1,6 +1,9 @@
 use ratatui::crossterm::event::{KeyCode, KeyEvent};
 
-use super::{EditorMode, ModeType};
+use super::{
+    EditorMode,
+    ModeType::{self, Exit, Normal},
+};
 
 pub struct CommandMode {
     mode: ModeType,
@@ -14,10 +17,11 @@ impl CommandMode {
             keys: String::new(),
         }
     }
-    fn handle_keybindings(&mut self) {
+
+    fn execute_command(&mut self) {
         match self.keys.as_str() {
-            ":" => self.mode = ModeType::Command,
-            _ => return,
+            "q" => self.mode = Exit,
+            _ => {}
         }
 
         self.keys = String::new();
@@ -34,10 +38,11 @@ impl EditorMode for CommandMode {
     }
 
     fn handle_events(&mut self, event: KeyEvent) {
-        if let KeyCode::Char(char) = event.code {
-            self.keys.push(char);
+        match event.code {
+            KeyCode::Char(char) => self.keys.push(char),
+            KeyCode::Esc => self.mode = Normal,
+            KeyCode::Enter => self.execute_command(),
+            _ => {}
         }
-
-        self.handle_keybindings();
     }
 }

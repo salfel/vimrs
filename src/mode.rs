@@ -9,6 +9,7 @@ pub mod normal;
 pub enum ModeType {
     Normal,
     Command,
+    Exit,
 }
 
 pub trait EditorMode {
@@ -31,6 +32,7 @@ impl Mode {
         match mode {
             ModeType::Normal => Mode::Normal(NormalMode::new()),
             ModeType::Command => Mode::Command(CommandMode::new()),
+            ModeType::Exit => panic!("exit should never be passed in here"),
         }
     }
 
