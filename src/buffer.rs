@@ -1,5 +1,7 @@
 use std::{cell::RefCell, fs, io, rc::Rc};
 
+use ratatui::{layout::Rect, Frame};
+
 use crate::mode::{
     EditorMode, Mode,
     ModeType::{Exit, Normal},
@@ -26,7 +28,7 @@ impl Buffer {
     pub fn new(name: String, errors: &mut Vec<String>) -> Self {
         match Self::get_file_contents(&name) {
             Ok(content) => {
-                let mut content = Rc::new(RefCell::new(Dirty::new(content)));
+                let content = Rc::new(RefCell::new(Dirty::new(content)));
                 Buffer {
                     name,
                     mode: Mode::new(Normal, Rc::clone(&content)),
@@ -35,7 +37,7 @@ impl Buffer {
             }
             Err(msg) => {
                 errors.push(msg.to_string());
-                let mut content = Rc::new(RefCell::new(Dirty::new(String::new())));
+                let content = Rc::new(RefCell::new(Dirty::new(String::new())));
 
                 Buffer {
                     name: String::new(),
@@ -50,6 +52,10 @@ impl Buffer {
         if self.mode.should_change() && !self.should_exit() {
             self.mode = Mode::new(self.mode.new_type(), Rc::clone(&self.content));
         }
+    }
+
+    pub fn render(&mut self, frame: &mut Frame, area: Rect) {
+        self.mode.render(frame, area);
     }
 
     pub fn should_exit(&self) -> bool {

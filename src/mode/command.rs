@@ -1,6 +1,12 @@
 use std::{cell::RefCell, rc::Rc};
 
-use ratatui::crossterm::event::{KeyCode, KeyEvent};
+use ratatui::{
+    crossterm::event::{KeyCode, KeyEvent},
+    layout::{Constraint, Layout},
+    prelude::Rect,
+    widgets::Paragraph,
+    Frame,
+};
 
 use crate::buffer::Dirty;
 
@@ -24,6 +30,15 @@ impl CommandMode {
         }
     }
 
+    fn pop_char(&mut self) {
+        if self.keys.is_empty() {
+            self.mode = Normal;
+        } else {
+            self.keys.pop();
+        }
+    }
+
+    #[allow(clippy::single_match)]
     fn execute_command(&mut self) {
         match self.keys.as_str() {
             "q" => self.mode = Exit,
@@ -46,9 +61,24 @@ impl EditorMode for CommandMode {
     fn handle_events(&mut self, event: KeyEvent) {
         match event.code {
             KeyCode::Char(char) => self.keys.push(char),
+            KeyCode::Backspace => self.pop_char(),
             KeyCode::Esc => self.mode = Normal,
             KeyCode::Enter => self.execute_command(),
             _ => {}
         }
+    }
+
+    fn render(&self, frame: &mut Frame, area: Rect) {
+        let layout = Layout::default()
+            .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
+            .split(area);
+
+        let content = (*self.content).borrow_mut();
+        let paragraph = Paragraph::new(content.data.as_str());
+        frame.render_widget(paragraph, layout[0]);
+
+        let command = format!(":{}", self.keys);
+        let paragraph = Paragraph::new(command);
+        frame.render_widget(paragraph, layout[1]);
     }
 }

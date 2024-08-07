@@ -2,7 +2,7 @@ use std::{cell::RefCell, rc::Rc};
 
 use command::CommandMode;
 use normal::NormalMode;
-use ratatui::crossterm::event::KeyEvent;
+use ratatui::{crossterm::event::KeyEvent, layout::Rect, Frame};
 
 use crate::buffer::Dirty;
 
@@ -24,6 +24,8 @@ pub trait EditorMode {
     fn new_type(&self) -> ModeType;
 
     fn handle_events(&mut self, event: KeyEvent);
+
+    fn render(&self, frame: &mut Frame, area: Rect);
 }
 
 pub enum Mode {
@@ -69,6 +71,13 @@ impl EditorMode for Mode {
         match self {
             Mode::Normal(mode) => mode.handle_events(event),
             Mode::Command(mode) => mode.handle_events(event),
+        }
+    }
+
+    fn render(&self, frame: &mut Frame, area: Rect) {
+        match self {
+            Mode::Normal(mode) => mode.render(frame, area),
+            Mode::Command(mode) => mode.render(frame, area),
         }
     }
 }

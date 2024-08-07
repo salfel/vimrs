@@ -1,6 +1,11 @@
 use std::{cell::RefCell, rc::Rc};
 
-use ratatui::crossterm::event::{KeyCode, KeyEvent};
+use ratatui::{
+    crossterm::event::{KeyCode, KeyEvent},
+    layout::Rect,
+    widgets::Paragraph,
+    Frame,
+};
 
 use crate::buffer::Dirty;
 
@@ -48,5 +53,11 @@ impl EditorMode for NormalMode {
         }
 
         self.handle_keybindings();
+    }
+
+    fn render(&self, frame: &mut Frame, area: Rect) {
+        let content = (*self.content).borrow_mut();
+        let paragraph = Paragraph::new(content.data.as_str());
+        frame.render_widget(paragraph, area);
     }
 }

@@ -42,22 +42,19 @@ impl App {
     }
 
     fn render_frame(&mut self, frame: &mut Frame) {
-        let current_buffer = &self.buffers[self.active_buffer];
-
         let layout = Layout::default()
             .direction(Direction::Vertical)
             .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
             .split(frame.size());
 
-        let content = (*self.buffers[self.active_buffer].content).borrow_mut();
-        let paragraph = Paragraph::new(content.data.as_str());
-        frame.render_widget(paragraph, layout[0]);
+        self.buffers[self.active_buffer].render(frame, layout[0]);
 
         let bottom_layout = Layout::default()
             .direction(Direction::Horizontal)
             .constraints(vec![Constraint::Percentage(50); 2])
             .split(layout[1]);
 
+        let current_buffer = &self.buffers[self.active_buffer];
         let label = format!("-- {} --", current_buffer.mode.label());
 
         let paragraph = Paragraph::new(label);
