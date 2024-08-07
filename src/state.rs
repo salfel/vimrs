@@ -19,6 +19,15 @@ impl State {
         }
     }
 
+    pub fn write_char(&mut self, char: char) {
+        let row = self
+            .content
+            .get_mut(self.cursor.row)
+            .expect("row was empty");
+        row.insert(self.cursor.col, char);
+        self.right();
+    }
+
     pub fn pop_char(&mut self) {
         if let Some(line) = self.content.get_mut(self.cursor.row) {
             if self.cursor.col == 0 {
@@ -37,15 +46,6 @@ impl State {
             line.remove(self.cursor.col - 1);
             self.left();
         }
-    }
-
-    pub fn write_char(&mut self, char: char) {
-        let row = self
-            .content
-            .get_mut(self.cursor.row)
-            .expect("row was empty");
-        row.insert(self.cursor.col, char);
-        self.right();
     }
 
     pub fn remove_char(&mut self) {
