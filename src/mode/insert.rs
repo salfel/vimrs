@@ -93,7 +93,10 @@ impl EditorMode for InsertMode {
             KeyCode::Up => self.get_state().up(),
             KeyCode::Down => self.get_state().down(),
             KeyCode::Enter => self.get_state().new_line(),
-            KeyCode::Esc => self.mode = Normal,
+            KeyCode::Esc => {
+                self.mode = Normal;
+                self.get_state().left()
+            }
             _ => {}
         }
     }

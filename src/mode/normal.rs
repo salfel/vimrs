@@ -10,7 +10,7 @@ use ratatui::{
 use crate::state::{BufferState, State};
 
 use super::{
-    EditorMode,
+    insert, EditorMode,
     ModeType::{self, Command, Insert},
 };
 
@@ -39,12 +39,17 @@ impl NormalMode {
         match self.keys.as_str() {
             ":" => self.mode = Command,
             "i" => self.mode = Insert,
+            "a" => {
+                self.mode = Insert;
+                self.get_state().right()
+            }
             "h" => self.get_state().left(),
             "j" => self.get_state().down(),
             "k" => self.get_state().up(),
             "l" => self.get_state().right(),
             "$" => self.get_state().end(),
             "^" => self.get_state().start(),
+            "x" => self.get_state().remove_char(),
             _ => return,
         }
 

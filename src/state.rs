@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use ratatui::text::Line;
+use ratatui::{crossterm::cursor, text::Line};
 
 pub type State = Rc<RefCell<BufferState>>;
 
@@ -19,6 +19,25 @@ impl BufferState {
         }
     }
 
+    pub fn new_line(&mut self) {
+        let curr_row = &mut self.content.data[self.cursor.row];
+        let remaining: String = curr_row.drain(..self.cursor.col).collect();
+
+        self.content.data.insert(self.cursor.row, remaining);
+        self.cursor.col = 0;
+        self.cursor.row += 1;
+    }
+
+    pub fn remove_char(&mut self) {
+        let curr_row = &mut self.content.data[self.cursor.row];
+
+        curr_row.remove(self.cursor.col);
+
+        if self.cursor.col == curr_row.len() {
+            self.left();
+        }
+    }
+
     pub fn left(&mut self) {
         if self.cursor.col == 0 {
             if self.cursor.row != 0 {
@@ -34,6 +53,7 @@ impl BufferState {
     pub fn right(&mut self) {
         let current_row = &self.content.data[self.cursor.row];
         if self.cursor.col == current_row.len() {
+            //if self.cursor.col == current_row.len() - 1 {
             if self.cursor.row != self.content.data.len() - 1 {
                 self.cursor.row += 1;
                 self.cursor.col = 0;
@@ -79,15 +99,6 @@ impl BufferState {
 
     pub fn start(&mut self) {
         self.cursor.col = 0;
-    }
-
-    pub fn new_line(&mut self) {
-        let curr_row = &mut self.content.data[self.cursor.row];
-        let remaining: String = curr_row.drain(..self.cursor.col).collect();
-
-        self.content.data.insert(self.cursor.row, remaining);
-        self.cursor.col = 0;
-        self.cursor.row += 1;
     }
 
     pub fn get_lines_from_content(&self) -> Vec<Line> {
