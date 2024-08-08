@@ -1,4 +1,4 @@
-use std::time::SystemTime;
+use std::{cell::RefMut, time::SystemTime};
 
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent},
@@ -7,7 +7,7 @@ use ratatui::{
     Frame,
 };
 
-use crate::state::State;
+use crate::state::{BufferState, State};
 
 use super::{
     EditorMode,
@@ -39,10 +39,18 @@ impl NormalMode {
         match self.keys.as_str() {
             ":" => self.mode = Command,
             "i" => self.mode = Insert,
+            "h" => self.get_state().left(),
+            "j" => self.get_state().down(),
+            "k" => self.get_state().up(),
+            "l" => self.get_state().right(),
             _ => return,
         }
 
         self.keys = String::new();
+    }
+
+    fn get_state(&self) -> RefMut<BufferState> {
+        (*self.state).borrow_mut()
     }
 }
 
@@ -66,9 +74,16 @@ impl EditorMode for NormalMode {
             }
         }
 
-        if let KeyCode::Char(char) = event.code {
-            self.keys.push(char);
-            self.last_key = Some(SystemTime::now());
+        match event.code {
+            KeyCode::Char(char) => {
+                self.keys.push(char);
+                self.last_key = Some(SystemTime::now());
+            }
+            KeyCode::Left => self.get_state().left(),
+            KeyCode::Up => self.get_state().up(),
+            KeyCode::Down => self.get_state().down(),
+            KeyCode::Right => self.get_state().right(),
+            _ => {}
         }
 
         self.handle_keybindings();
