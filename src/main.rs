@@ -3,6 +3,7 @@ mod buffer;
 mod cursor;
 mod mode;
 mod state;
+mod textobjects;
 mod tui;
 
 use app::App;

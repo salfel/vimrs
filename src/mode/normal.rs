@@ -1,4 +1,4 @@
-use std::{cell::RefMut, time::SystemTime};
+use std::{cell::RefMut, rc::Rc, time::SystemTime};
 
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent},
@@ -9,6 +9,8 @@ use ratatui::{
 
 use crate::{
     state::{BufferState, State},
+    textobjects::TextObject,
+    textobjects::{word::Word, TextObjectPosition},
 };
 
 use super::{
@@ -34,6 +36,16 @@ impl NormalMode {
             state,
         }
     }
+
+    fn goto_text_object_position(&self, position: TextObjectPosition) {
+        let position = match position {
+            TextObjectPosition::WordStart => Word::new(Rc::clone(&self.state)).start(),
+            TextObjectPosition::WordEnd => Word::new(Rc::clone(&self.state)).end(),
+        };
+
+        let mut state = (*self.state).borrow_mut();
+        state.cursor.move_to(position);
+    }
 }
 
 impl NormalMode {
@@ -52,6 +64,8 @@ impl NormalMode {
             "$" => self.get_state().end(),
             "^" => self.get_state().start(),
             "x" => self.get_state().remove_char(),
+            "e" => self.goto_text_object_position(TextObjectPosition::WordEnd),
+            "b" => self.goto_text_object_position(TextObjectPosition::WordStart),
             _ => return,
         }
 

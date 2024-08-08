@@ -11,4 +11,14 @@ impl Cursor {
         let cell = frame.buffer_mut().get_mut(self.col as u16, self.row as u16);
         cell.set_bg(Color::Black);
     }
+
+    pub fn move_to(&mut self, position: Position) {
+        self.col = position.x;
+        self.row = position.y;
+    }
+}
+
+pub struct Position {
+    pub x: usize,
+    pub y: usize,
 }
