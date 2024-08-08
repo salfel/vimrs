@@ -43,6 +43,8 @@ impl NormalMode {
             "j" => self.get_state().down(),
             "k" => self.get_state().up(),
             "l" => self.get_state().right(),
+            "$" => self.get_state().end(),
+            "^" => self.get_state().start(),
             _ => return,
         }
 
