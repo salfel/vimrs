@@ -1,3 +1,5 @@
+use std::time::SystemTime;
+
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent},
     layout::Rect,
@@ -12,9 +14,12 @@ use super::{
     ModeType::{self, Command, Insert},
 };
 
+const KEY_TIMEOUT: u64 = 2;
+
 pub struct NormalMode {
     mode: ModeType,
     keys: String,
+    last_key: Option<SystemTime>,
     state: State,
 }
 
@@ -23,6 +28,7 @@ impl NormalMode {
         Self {
             mode: ModeType::Normal,
             keys: String::new(),
+            last_key: None,
             state,
         }
     }
@@ -50,8 +56,19 @@ impl EditorMode for NormalMode {
     }
 
     fn handle_events(&mut self, event: KeyEvent) {
+        if let Some(time) = self.last_key {
+            match SystemTime::now().duration_since(time) {
+                Ok(time) if time.as_secs() >= KEY_TIMEOUT => {
+                    self.last_key = None;
+                    self.keys = String::new()
+                }
+                _ => {}
+            }
+        }
+
         if let KeyCode::Char(char) = event.code {
             self.keys.push(char);
+            self.last_key = Some(SystemTime::now());
         }
 
         self.handle_keybindings();
