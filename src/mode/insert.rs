@@ -106,6 +106,6 @@ impl EditorMode for InsertMode {
         let paragraph = Paragraph::new(state.get_lines_from_content());
         frame.render_widget(paragraph, area);
 
-        frame.render_widget(state.cursor, area);
+        state.cursor.render(frame, 1);
     }
 }

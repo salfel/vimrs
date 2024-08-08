@@ -10,7 +10,7 @@ use ratatui::{
 use crate::state::{BufferState, State};
 
 use super::{
-    insert, EditorMode,
+    EditorMode,
     ModeType::{self, Command, Insert},
 };
 
@@ -101,6 +101,6 @@ impl EditorMode for NormalMode {
         let paragraph = Paragraph::new(state.get_lines_from_content());
         frame.render_widget(paragraph, area);
 
-        frame.render_widget(state.cursor, area);
+        state.cursor.render(frame, 0);
     }
 }
