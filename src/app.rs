@@ -10,12 +10,14 @@ use ratatui::{
 use crate::tui;
 use crate::{buffer::Buffer, mode::EditorMode};
 
+#[allow(dead_code)]
 pub struct App {
     buffers: Vec<Buffer>,
     errors: Vec<String>,
     active_buffer: usize,
 }
 
+#[allow(dead_code)]
 impl App {
     pub fn new(args: Vec<String>) -> Self {
         let mut errors = Vec::new();

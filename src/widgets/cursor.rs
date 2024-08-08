@@ -4,7 +4,7 @@ use ratatui::{
     widgets::Widget,
 };
 
-use crate::buffer::Cursor;
+use crate::state::Cursor;
 
 impl Widget for Cursor {
     fn render(self, _area: Rect, buf: &mut Buffer) {

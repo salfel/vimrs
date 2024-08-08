@@ -3,7 +3,7 @@ use insert::InsertMode;
 use normal::NormalMode;
 use ratatui::{crossterm::event::KeyEvent, layout::Rect, Frame};
 
-use crate::buffer::State;
+use crate::state::State;
 
 pub mod command;
 pub mod insert;

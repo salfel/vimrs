@@ -1,6 +1,7 @@
 mod app;
 mod buffer;
 mod mode;
+mod state;
 mod tui;
 mod widgets;
 

@@ -6,7 +6,7 @@ use ratatui::{
     Frame,
 };
 
-use crate::buffer::State;
+use crate::state::State;
 
 use super::{
     EditorMode,

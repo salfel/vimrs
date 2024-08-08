@@ -1,3 +1,5 @@
+use std::cell::RefMut;
+
 use ratatui::{
     crossterm::event::{KeyCode, KeyEvent},
     prelude::Rect,
@@ -5,7 +7,7 @@ use ratatui::{
     Frame,
 };
 
-use crate::buffer::State;
+use crate::state::{BufferState, State};
 
 use super::{
     EditorMode,
@@ -26,7 +28,7 @@ impl InsertMode {
     }
 
     fn write_char(&mut self, char: char) {
-        let mut state = (*self.state).borrow_mut();
+        let mut state = self.get_state();
         let cursor = state.cursor;
 
         if let Some(line) = state.content.data.get_mut(cursor.row) {
@@ -36,7 +38,7 @@ impl InsertMode {
     }
 
     fn pop_char(&mut self) {
-        let mut state = (*self.state).borrow_mut();
+        let mut state = self.get_state();
         let cursor = state.cursor;
 
         if let Some(line) = state.content.data.get_mut(cursor.row) {
@@ -50,28 +52,8 @@ impl InsertMode {
         }
     }
 
-    fn left(&self) {
-        let mut state = (*self.state).borrow_mut();
-
-        state.left();
-    }
-
-    fn right(&self) {
-        let mut state = (*self.state).borrow_mut();
-
-        state.right();
-    }
-
-    fn up(&self) {
-        let mut state = (*self.state).borrow_mut();
-
-        state.up();
-    }
-
-    fn down(&self) {
-        let mut state = (*self.state).borrow_mut();
-
-        state.down();
+    fn get_state(&self) -> RefMut<BufferState> {
+        (*self.state).borrow_mut()
     }
 }
 
@@ -88,10 +70,11 @@ impl EditorMode for InsertMode {
         match event.code {
             KeyCode::Char(char) => self.write_char(char),
             KeyCode::Backspace => self.pop_char(),
-            KeyCode::Left => self.left(),
-            KeyCode::Right => self.right(),
-            KeyCode::Up => self.up(),
-            KeyCode::Down => self.down(),
+            KeyCode::Left => self.get_state().left(),
+            KeyCode::Right => self.get_state().right(),
+            KeyCode::Up => self.get_state().up(),
+            KeyCode::Down => self.get_state().down(),
+            KeyCode::Enter => self.get_state().new_line(),
             KeyCode::Esc => self.mode = Normal,
             _ => {}
         }
