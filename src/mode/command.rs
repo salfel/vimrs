@@ -79,6 +79,6 @@ impl EditorMode for CommandMode {
         let paragraph = Paragraph::new(command);
         frame.render_widget(paragraph, layout[1]);
 
-        state.cursor.render(frame, 0);
+        state.cursor.render(frame);
     }
 }

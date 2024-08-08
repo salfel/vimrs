@@ -103,6 +103,6 @@ impl EditorMode for NormalMode {
         let paragraph = Paragraph::new(state.get_lines_from_content());
         frame.render_widget(paragraph, area);
 
-        state.cursor.render(frame, 0);
+        state.cursor.render(frame);
     }
 }
