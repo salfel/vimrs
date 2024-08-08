@@ -67,6 +67,12 @@ impl InsertMode {
 
         state.right();
     }
+
+    fn up(&self) {
+        let mut state = (*self.state).borrow_mut();
+
+        state.up();
+    }
 }
 
 impl EditorMode for InsertMode {
@@ -84,6 +90,7 @@ impl EditorMode for InsertMode {
             KeyCode::Backspace => self.pop_char(),
             KeyCode::Left => self.left(),
             KeyCode::Right => self.right(),
+            KeyCode::Up => self.up(),
             KeyCode::Esc => self.mode = Normal,
             _ => {}
         }

@@ -48,6 +48,19 @@ impl BufferState {
         }
     }
 
+    pub fn up(&mut self) {
+        if self.cursor.row == 0 {
+            return;
+        }
+
+        let prev_row = &self.content.data[self.cursor.row - 1];
+        self.cursor.row -= 1;
+
+        if self.cursor.col > prev_row.len() {
+            self.cursor.col = prev_row.len();
+        }
+    }
+
     pub fn get_lines_from_content(&self) -> Vec<Line> {
         self.content
             .data
