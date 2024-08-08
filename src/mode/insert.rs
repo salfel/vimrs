@@ -1,5 +1,11 @@
+use std::io::stdout;
+
 use ratatui::{
-    crossterm::event::{KeyCode, KeyEvent},
+    crossterm::{
+        cursor,
+        event::{KeyCode, KeyEvent},
+        execute,
+    },
     prelude::Rect,
     widgets::Paragraph,
     Frame,
@@ -75,5 +81,7 @@ impl EditorMode for InsertMode {
         let state = (*self.state).borrow_mut();
         let paragraph = Paragraph::new(state.get_lines_from_content());
         frame.render_widget(paragraph, area);
+
+        frame.render_widget(state.cursor, area);
     }
 }

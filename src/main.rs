@@ -2,6 +2,7 @@ mod app;
 mod buffer;
 mod mode;
 mod tui;
+mod widgets;
 
 use app::App;
 use std::{env, io};

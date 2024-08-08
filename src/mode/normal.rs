@@ -61,5 +61,7 @@ impl EditorMode for NormalMode {
         let state = (*self.state).borrow_mut();
         let paragraph = Paragraph::new(state.get_lines_from_content());
         frame.render_widget(paragraph, area);
+
+        frame.render_widget(state.cursor, area);
     }
 }
