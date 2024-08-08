@@ -1,5 +1,6 @@
 mod app;
 mod buffer;
+mod cursor;
 mod mode;
 mod state;
 mod tui;

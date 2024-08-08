@@ -1,6 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
-use ratatui::{style::Color, text::Line, Frame};
+use ratatui::text::Line;
+
+use crate::cursor::Cursor;
 
 pub type State = Rc<RefCell<BufferState>>;
 
@@ -122,20 +124,5 @@ pub struct Dirty<T> {
 impl<T> Dirty<T> {
     pub fn new(data: T) -> Self {
         Dirty { data, dirty: false }
-    }
-}
-
-#[derive(Default, Clone, Copy)]
-pub struct Cursor {
-    pub row: usize,
-    pub col: usize,
-}
-
-impl Cursor {
-    pub fn render(&self, frame: &mut Frame, offset: i16) {
-        let cell = frame
-            .buffer_mut()
-            .get_mut((self.col as i16 + offset) as u16, self.row as u16);
-        cell.set_bg(Color::Black);
     }
 }
