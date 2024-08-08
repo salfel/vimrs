@@ -61,6 +61,19 @@ impl BufferState {
         }
     }
 
+    pub fn down(&mut self) {
+        if self.cursor.row == self.content.data.len() - 1 {
+            return;
+        }
+
+        let next_row = &self.content.data[self.cursor.row + 1];
+        self.cursor.row += 1;
+
+        if self.cursor.col > next_row.len() {
+            self.cursor.row = next_row.len();
+        }
+    }
+
     pub fn get_lines_from_content(&self) -> Vec<Line> {
         self.content
             .data
@@ -131,6 +144,7 @@ impl Buffer {
     }
 }
 
+#[allow(dead_code)]
 pub struct Dirty<T> {
     pub data: T,
     pub dirty: bool,

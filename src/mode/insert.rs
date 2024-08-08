@@ -1,11 +1,5 @@
-use std::io::stdout;
-
 use ratatui::{
-    crossterm::{
-        cursor,
-        event::{KeyCode, KeyEvent},
-        execute,
-    },
+    crossterm::event::{KeyCode, KeyEvent},
     prelude::Rect,
     widgets::Paragraph,
     Frame,
@@ -73,6 +67,12 @@ impl InsertMode {
 
         state.up();
     }
+
+    fn down(&self) {
+        let mut state = (*self.state).borrow_mut();
+
+        state.down();
+    }
 }
 
 impl EditorMode for InsertMode {
@@ -91,6 +91,7 @@ impl EditorMode for InsertMode {
             KeyCode::Left => self.left(),
             KeyCode::Right => self.right(),
             KeyCode::Up => self.up(),
+            KeyCode::Down => self.down(),
             KeyCode::Esc => self.mode = Normal,
             _ => {}
         }
