@@ -19,32 +19,73 @@ impl Word {
         let curr_row = &state.content.data[state.cursor.row];
 
         let chars: Vec<char> = curr_row.chars().collect();
-        let start = Self::_get_start(&state.cursor, &chars);
-        let end = Self::_get_end(&state.cursor, &chars);
+        let start = Self::get_start(state.cursor.col, &chars);
+        let end = Self::get_end(state.cursor.col, &chars);
         let row = state.cursor.row;
 
         Word { start, end, row }
     }
 
-    fn _get_start(cursor: &Cursor, chars: &[char]) -> usize {
-        let mut idx = 0;
-        for (i, char) in chars.iter().enumerate().take(cursor.col) {
-            if *char == ' ' {
-                idx = i + 1;
+    fn get_start(col: usize, chars: &[char]) -> usize {
+        let mut idx = col;
+
+        if idx != 0 && Self::is_start(idx, chars) {
+            idx -= 1;
+            while Self::is_empty(idx, chars) {
+                idx -= 1;
             }
         }
 
-        idx
+        let mut prev = ' ';
+        while let Some(char) = chars.get(idx) {
+            if *char == ' ' && prev != ' ' {
+                return idx + 1;
+            } else if idx == 0 {
+                return 0;
+            }
+
+            idx -= 1;
+            prev = *char;
+        }
+
+        0
     }
 
-    fn _get_end(cursor: &Cursor, chars: &[char]) -> usize {
-        for (idx, char) in chars.iter().enumerate().skip(cursor.col) {
-            if *char == ' ' {
+    fn get_end(col: usize, chars: &[char]) -> usize {
+        let mut idx = col;
+
+        if Self::is_end(idx, chars) {
+            idx += 1;
+            while Self::is_empty(idx, chars) {
+                idx += 1;
+            }
+        }
+
+        let mut prev = ' ';
+        while let Some(char) = chars.get(idx) {
+            if *char == ' ' && prev != ' ' {
                 return idx - 1;
             }
+            idx += 1;
+            prev = *char;
         }
 
         chars.len() - 1
+    }
+
+    fn is_start(col: usize, chars: &[char]) -> bool {
+        col == 0 || (Self::is_empty(col - 1, chars) && !Self::is_empty(col, chars))
+    }
+
+    fn is_end(col: usize, chars: &[char]) -> bool {
+        Self::is_empty(col + 1, chars) && !Self::is_empty(col, chars)
+    }
+
+    fn is_empty(idx: usize, chars: &[char]) -> bool {
+        match chars.get(idx) {
+            Some(char) => *char == ' ',
+            None => false,
+        }
     }
 }
 
