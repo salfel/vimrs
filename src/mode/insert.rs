@@ -52,10 +52,20 @@ impl InsertMode {
 
             line.remove(cursor.col - 1);
 
-            if cursor.col > line.len() {
-                state.left();
-            }
+            state.left();
         }
+    }
+
+    fn left(&self) {
+        let mut state = (*self.state).borrow_mut();
+
+        state.left();
+    }
+
+    fn right(&self) {
+        let mut state = (*self.state).borrow_mut();
+
+        state.right();
     }
 }
 
@@ -72,6 +82,8 @@ impl EditorMode for InsertMode {
         match event.code {
             KeyCode::Char(char) => self.write_char(char),
             KeyCode::Backspace => self.pop_char(),
+            KeyCode::Left => self.left(),
+            KeyCode::Right => self.right(),
             KeyCode::Esc => self.mode = Normal,
             _ => {}
         }
