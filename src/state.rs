@@ -69,9 +69,21 @@ impl BufferState {
         }
     }
 
+    pub fn end(&mut self) {
+        let curr_row = &mut self.content.data[self.cursor.row];
+
+        if !curr_row.is_empty() {
+            self.cursor.col = curr_row.len() - 1;
+        }
+    }
+
+    pub fn start(&mut self) {
+        self.cursor.col = 0;
+    }
+
     pub fn new_line(&mut self) {
         let curr_row = &mut self.content.data[self.cursor.row];
-        let remaining: String = curr_row.drain(self.cursor.col..).collect();
+        let remaining: String = curr_row.drain(..self.cursor.col).collect();
 
         self.content.data.insert(self.cursor.row, remaining);
         self.cursor.col = 0;

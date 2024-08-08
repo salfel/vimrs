@@ -27,7 +27,7 @@ impl InsertMode {
         }
     }
 
-    fn write_char(&mut self, char: char) {
+    fn write_char(&self, char: char) {
         let mut state = self.get_state();
         let cursor = state.cursor;
 
@@ -37,18 +37,36 @@ impl InsertMode {
         }
     }
 
-    fn pop_char(&mut self) {
+    fn pop_char(&self) {
         let mut state = self.get_state();
         let cursor = state.cursor;
 
         if let Some(line) = state.content.data.get_mut(cursor.row) {
-            if line.is_empty() {
-                return;
+            if cursor.col == 0 {
+                self.pop_line(state);
+            } else {
+                line.remove(cursor.col - 1);
+
+                state.left();
             }
+        }
+    }
 
-            line.remove(cursor.col - 1);
+    fn pop_line(&self, mut state: RefMut<BufferState>) {
+        let cursor = state.cursor;
 
-            state.left();
+        if cursor.row == 0 {
+            return;
+        }
+
+        let remaining = state.content.data.remove(cursor.row);
+        let prev_row = &mut state.content.data[cursor.row - 1];
+        let prev_row_len = prev_row.len();
+        prev_row.push_str(&remaining);
+
+        state.up();
+        for _ in 0..prev_row_len {
+            state.right();
         }
     }
 
