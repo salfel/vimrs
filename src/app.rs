@@ -8,6 +8,7 @@ use ratatui::{
 
 use crate::{
     buffer::Buffer,
+    insert::{insert_char, pop_char},
     tui,
 };
 
@@ -44,7 +45,8 @@ impl App {
         if event::poll(Duration::from_millis(10))? {
             match event::read()? {
                 Event::Key(event) if event.kind == KeyEventKind::Press => match event.code {
-                    KeyCode::Char('q') => self.exit = true,
+                    KeyCode::Char(char) => insert_char(&mut self.get_active_buffer().context, char),
+                    KeyCode::Backspace => pop_char(&mut self.get_active_buffer().context),
                     _ => {}
                 },
                 _ => {}
