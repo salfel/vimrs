@@ -24,7 +24,7 @@ impl Motion {
 
 fn move_right(cx: &mut Context) -> Position {
     match cx.content.get(cx.cursor.row) {
-        Some(line) if cx.cursor.col >= line.len() - 1 => Position {
+        Some(line) if cx.cursor.col < line.len() - 1 => Position {
             row: cx.cursor.row,
             col: cx.cursor.col + 1,
         },

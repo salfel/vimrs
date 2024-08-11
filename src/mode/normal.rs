@@ -16,7 +16,10 @@ fn handle_char(cx: &mut Context, key: char) {
     cx.keys.push(key);
 
     match Motion::new(&cx.keys) {
-        Some(motion) => cx.cursor = motion.execute(cx),
+        Some(motion) => {
+            cx.cursor = motion.execute(cx);
+            cx.keys = String::new();
+        }
         None => execute_keybindings(cx),
     }
 }
@@ -25,9 +28,11 @@ fn execute_keybindings(cx: &mut Context) {
     match cx.keys.as_str() {
         "i" => {
             cx.change_mode(Mode::Insert);
-            Motion::Left.execute(cx);
         }
-        "a" => cx.change_mode(Mode::Insert),
+        "a" => {
+            cx.change_mode(Mode::Insert);
+            cx.cursor.col += 1;
+        }
         _ => {}
     }
 }

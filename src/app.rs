@@ -43,6 +43,8 @@ impl App {
 
         let paragraph = Paragraph::new(self.get_active_buffer().get_mode().to_string());
         frame.render_widget(paragraph, layout[1]);
+
+        self.get_active_buffer().render_cursor(frame);
     }
 
     fn handle_events(&mut self) -> io::Result<()> {

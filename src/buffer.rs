@@ -1,4 +1,4 @@
-use ratatui::crossterm::event::KeyEvent;
+use ratatui::{crossterm::event::KeyEvent, style::Color, Frame};
 
 use crate::{context::Context, mode::Mode};
 
@@ -14,6 +14,14 @@ impl Buffer {
             filename,
             context: Context::new(content),
         }
+    }
+
+    pub fn render_cursor(&self, frame: &mut Frame) {
+        let cell = frame.buffer_mut().get_mut(
+            self.context.cursor.col as u16,
+            self.context.cursor.row as u16,
+        );
+        cell.set_bg(Color::Black);
     }
 
     pub fn get_content(&self) -> String {
