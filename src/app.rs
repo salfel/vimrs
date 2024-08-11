@@ -1,16 +1,12 @@
 use std::{io, time::Duration};
 
 use ratatui::{
-    crossterm::event::{self, Event, KeyCode, KeyEventKind},
+    crossterm::event::{self, Event, KeyEventKind},
     widgets::Paragraph,
     Frame,
 };
 
-use crate::{
-    buffer::Buffer,
-    insert::{insert_char, pop_char},
-    tui,
-};
+use crate::{buffer::Buffer, mode::Mode, tui};
 
 pub struct App {
     exit: bool,
@@ -37,18 +33,21 @@ impl App {
     }
 
     fn render_frame(&mut self, frame: &mut Frame) {
-        let paragraph = Paragraph::new(self.get_active_buffer().context.content.join("\n"));
+        let mut content = self.get_active_buffer().get_content().to_string();
+        content.push_str(match self.get_active_buffer().context.mode {
+            Mode::Normal => "normal",
+            Mode::Insert => "insert",
+        });
+        let paragraph = Paragraph::new(content);
         frame.render_widget(paragraph, frame.size());
     }
 
     fn handle_events(&mut self) -> io::Result<()> {
         if event::poll(Duration::from_millis(10))? {
             match event::read()? {
-                Event::Key(event) if event.kind == KeyEventKind::Press => match event.code {
-                    KeyCode::Char(char) => insert_char(&mut self.get_active_buffer().context, char),
-                    KeyCode::Backspace => pop_char(&mut self.get_active_buffer().context),
-                    _ => {}
-                },
+                Event::Key(event) if event.kind == KeyEventKind::Press => {
+                    self.get_active_buffer().handle_keys(event)
+                }
                 _ => {}
             }
         }

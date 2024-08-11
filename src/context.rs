@@ -1,6 +1,12 @@
+use ratatui::crossterm::event::KeyEvent;
+
+use crate::mode::Mode;
+
 pub struct Context {
     pub content: Vec<String>,
-    pub cursor: Cursor,
+    pub cursor: Position,
+    pub keys: String,
+    pub mode: Mode,
 }
 
 impl Context {
@@ -13,13 +19,20 @@ impl Context {
 
         Context {
             content,
-            cursor: Cursor::default(),
+            cursor: Position::default(),
+            keys: String::new(),
+            mode: Mode::Normal,
         }
+    }
+
+    pub fn handle_keys(&mut self, event: KeyEvent) {
+        let mode = self.mode;
+        mode.handle_keys(self, event);
     }
 }
 
-#[derive(Default)]
-pub struct Cursor {
+#[derive(Default, Clone, Copy)]
+pub struct Position {
     pub col: usize,
     pub row: usize,
 }

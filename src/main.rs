@@ -1,7 +1,8 @@
 mod app;
 mod buffer;
 mod context;
-mod insert;
+mod mode;
+mod motion;
 mod tui;
 
 use app::App;
