@@ -2,11 +2,12 @@ use std::{io, time::Duration};
 
 use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
+    layout::{Constraint, Layout},
     widgets::Paragraph,
     Frame,
 };
 
-use crate::{buffer::Buffer, mode::Mode, tui};
+use crate::{buffer::Buffer, tui};
 
 pub struct App {
     exit: bool,
@@ -33,13 +34,15 @@ impl App {
     }
 
     fn render_frame(&mut self, frame: &mut Frame) {
-        let mut content = self.get_active_buffer().get_content().to_string();
-        content.push_str(match self.get_active_buffer().context.mode {
-            Mode::Normal => "normal",
-            Mode::Insert => "insert",
-        });
-        let paragraph = Paragraph::new(content);
-        frame.render_widget(paragraph, frame.size());
+        let layout = Layout::default()
+            .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
+            .split(frame.size());
+
+        let paragraph = Paragraph::new(self.get_active_buffer().get_content().to_string());
+        frame.render_widget(paragraph, layout[0]);
+
+        let paragraph = Paragraph::new(self.get_active_buffer().get_mode().to_string());
+        frame.render_widget(paragraph, layout[1]);
     }
 
     fn handle_events(&mut self) -> io::Result<()> {

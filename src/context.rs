@@ -29,6 +29,11 @@ impl Context {
         let mode = self.mode;
         mode.handle_keys(self, event);
     }
+
+    pub fn change_mode(&mut self, mode: Mode) {
+        self.mode = mode;
+        self.keys = String::new();
+    }
 }
 
 #[derive(Default, Clone, Copy)]

@@ -2,9 +2,10 @@ use ratatui::crossterm::event::KeyEvent;
 
 use crate::{context::Context, mode::Mode};
 
+#[allow(dead_code)]
 pub struct Buffer {
     pub filename: String,
-    pub context: Context,
+    context: Context,
 }
 
 impl Buffer {
@@ -17,6 +18,10 @@ impl Buffer {
 
     pub fn get_content(&self) -> String {
         self.context.content.join("\n")
+    }
+
+    pub fn get_mode(&self) -> Mode {
+        self.context.mode
     }
 
     pub fn handle_keys(&mut self, event: KeyEvent) {

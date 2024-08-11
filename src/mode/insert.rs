@@ -6,7 +6,7 @@ pub fn handle_insert_keys(cx: &mut Context, event: KeyEvent) {
     match event.code {
         KeyCode::Char(key) => insert_char(cx, key),
         KeyCode::Backspace => pop_char(cx),
-        KeyCode::Esc => cx.mode = Mode::Normal,
+        KeyCode::Esc => cx.change_mode(Mode::Normal),
         _ => {}
     }
 }
