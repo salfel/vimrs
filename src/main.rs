@@ -1,4 +1,6 @@
 mod app;
+mod buffer;
+mod context;
 mod tui;
 
 use app::App;

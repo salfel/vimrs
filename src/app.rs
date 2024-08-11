@@ -6,15 +6,24 @@ use ratatui::{
     Frame,
 };
 
-use crate::tui;
+use crate::{
+    buffer::Buffer,
+    tui,
+};
 
 pub struct App {
     exit: bool,
+    buffers: Vec<Buffer>,
+    active_buffer: usize,
 }
 
 impl App {
     pub fn new(_args: Vec<String>) -> Self {
-        App { exit: false }
+        App {
+            exit: false,
+            buffers: vec![Buffer::new(String::new(), String::new())],
+            active_buffer: 0,
+        }
     }
 
     pub fn run(&mut self, terminal: &mut tui::Tui) -> io::Result<()> {
@@ -27,7 +36,7 @@ impl App {
     }
 
     fn render_frame(&mut self, frame: &mut Frame) {
-        let paragraph = Paragraph::new("Hello world");
+        let paragraph = Paragraph::new(self.get_active_buffer().context.content.join("\n"));
         frame.render_widget(paragraph, frame.size());
     }
 
@@ -43,5 +52,9 @@ impl App {
         }
 
         Ok(())
+    }
+
+    fn get_active_buffer(&mut self) -> &mut Buffer {
+        &mut self.buffers[self.active_buffer]
     }
 }
