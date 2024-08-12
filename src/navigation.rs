@@ -3,18 +3,33 @@ use std::cmp::min;
 use crate::context::{Context, Position};
 
 pub fn move_right(cx: &mut Context) -> Position {
-    match cx.content.get(cx.cursor.row) {
-        Some(line) if cx.cursor.col < line.len() - 1 => Position {
+    if cx.cursor.col >= cx.row(cx.cursor.row).len() - 1 {
+        if cx.cursor.row < cx.content.len() - 1 {
+            Position {
+                row: cx.cursor.row + 1,
+                col: 0,
+            }
+        } else {
+            cx.cursor
+        }
+    } else {
+        Position {
             row: cx.cursor.row,
             col: cx.cursor.col + 1,
-        },
-        _ => cx.cursor,
+        }
     }
 }
 
 pub fn move_left(cx: &mut Context) -> Position {
     if cx.cursor.col == 0 {
-        cx.cursor
+        if cx.cursor.row == 0 {
+            cx.cursor
+        } else {
+            Position {
+                row: cx.cursor.row - 1,
+                col: cx.row(cx.cursor.row - 1).len() - 1,
+            }
+        }
     } else {
         Position {
             row: cx.cursor.row,

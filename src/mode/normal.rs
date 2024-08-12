@@ -31,7 +31,7 @@ fn execute_keybindings(cx: &mut Context) {
         }
         "a" => {
             cx.change_mode(Mode::Insert);
-            move_right(cx);
+            cx.cursor = move_right(cx);
         }
         _ => {}
     }

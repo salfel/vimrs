@@ -1,3 +1,5 @@
+use std::borrow::BorrowMut;
+
 use ratatui::crossterm::event::KeyEvent;
 
 use crate::mode::Mode;
@@ -33,6 +35,20 @@ impl Context {
     pub fn change_mode(&mut self, mode: Mode) {
         self.mode = mode;
         self.keys = String::new();
+    }
+
+    pub fn row(&self, row: usize) -> &String {
+        &self
+            .content
+            .get(row)
+            .unwrap_or_else(|| panic!("row: {} doesn't exist", row))
+    }
+
+    pub fn row_mut(&mut self, row: usize) -> &mut String {
+        self.content
+            .get_mut(row)
+            .unwrap_or_else(|| panic!("row: {} doesn't exist", row))
+            .borrow_mut()
     }
 }
 

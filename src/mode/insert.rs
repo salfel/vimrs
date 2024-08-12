@@ -9,7 +9,7 @@ pub fn handle_insert_keys(cx: &mut Context, event: KeyEvent) {
         KeyCode::Enter => new_line(cx),
         KeyCode::Esc => {
             cx.change_mode(Mode::Normal);
-            move_left(cx);
+            cx.cursor = move_left(cx);
         }
         _ => {}
     }
