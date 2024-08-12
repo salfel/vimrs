@@ -1,6 +1,6 @@
 use ratatui::crossterm::event::{KeyCode, KeyEvent};
 
-use crate::{context::Context, motion::Motion};
+use crate::{context::Context, motion::Motion, navigation::move_right};
 
 use super::Mode;
 
@@ -31,7 +31,7 @@ fn execute_keybindings(cx: &mut Context) {
         }
         "a" => {
             cx.change_mode(Mode::Insert);
-            cx.cursor.col += 1;
+            move_right(cx);
         }
         _ => {}
     }
