@@ -30,7 +30,7 @@ fn pop_char(cx: &mut Context) {
                 let prev_row = cx
                     .content
                     .get_mut(cx.cursor.row - 1)
-                    .expect("row doesn't exist");
+                    .unwrap_or_else(|| panic!("row: {} doesn't exist", cx.cursor.row));
 
                 cx.cursor.row -= 1;
                 cx.cursor.col = prev_row.len();
