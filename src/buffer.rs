@@ -21,7 +21,7 @@ impl Buffer {
             self.context.cursor.col as u16,
             self.context.cursor.row as u16,
         );
-        cell.set_bg(Color::Black);
+        cell.set_bg(Color::White).set_fg(Color::Black);
     }
 
     pub fn get_content(&self) -> String {
