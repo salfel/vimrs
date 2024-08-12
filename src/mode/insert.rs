@@ -1,6 +1,6 @@
 use ratatui::crossterm::event::{KeyCode, KeyEvent};
 
-use crate::{context::Context, mode::Mode, navigation::move_left};
+use crate::{context::Context, mode::Mode, navigation::left};
 
 pub fn handle_insert_keys(cx: &mut Context, event: KeyEvent) {
     match event.code {
@@ -9,7 +9,7 @@ pub fn handle_insert_keys(cx: &mut Context, event: KeyEvent) {
         KeyCode::Enter => new_line(cx),
         KeyCode::Esc => {
             cx.change_mode(Mode::Normal);
-            cx.cursor = move_left(cx);
+            cx.cursor = left(cx);
         }
         _ => {}
     }
