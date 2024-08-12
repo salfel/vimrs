@@ -41,7 +41,7 @@ impl App {
         let paragraph = Paragraph::new(self.get_active_buffer().get_content().to_string());
         frame.render_widget(paragraph, layout[0]);
 
-        let paragraph = Paragraph::new(self.get_active_buffer().get_mode().to_string());
+        let paragraph = Paragraph::new(format!("-- {} --", self.get_active_buffer().get_mode()));
         frame.render_widget(paragraph, layout[1]);
 
         self.get_active_buffer().render_cursor(frame);
