@@ -9,7 +9,7 @@ pub fn handle_command_keys(cx: &mut Context, event: KeyEvent) {
         KeyCode::Char(key) => cx.keys.push(key),
         KeyCode::Backspace => pop_char(cx),
         KeyCode::Enter => execute_command(cx),
-        KeyCode::Esc => cx.keys = String::new(),
+        KeyCode::Esc => cx.change_mode(Mode::Normal),
         _ => {}
     }
 }
@@ -18,6 +18,11 @@ pub fn handle_command_keys(cx: &mut Context, event: KeyEvent) {
 fn execute_command(cx: &mut Context) {
     match cx.keys.as_str() {
         "q" => cx.exit = true,
+        "w" => cx.write = true,
+        "wq" => {
+            cx.exit = true;
+            cx.write = true;
+        }
         _ => {}
     }
 

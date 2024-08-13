@@ -1,6 +1,10 @@
 use ratatui::{crossterm::event::KeyEvent, style::Color, Frame};
 
-use crate::{context::Context, mode::Mode};
+use crate::{
+    context::Context,
+    filesystem::{read_file, write_file},
+    mode::Mode,
+};
 
 #[allow(dead_code)]
 pub struct Buffer {
@@ -9,10 +13,20 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    pub fn new(filename: String, content: String) -> Self {
+    pub fn new(filename: String) -> Self {
+        let content = read_file(&filename);
+
         Buffer {
             filename,
             context: Context::new(content),
+        }
+    }
+
+    pub fn run_actions(&mut self) {
+        if self.context.write {
+            self.write_contents();
+
+            self.context.write = false;
         }
     }
 
@@ -42,5 +56,9 @@ impl Buffer {
 
     pub fn print(&self) -> String {
         self.context.print.clone()
+    }
+
+    fn write_contents(&self) {
+        write_file(&self.filename, &self.context.content.join("\n"));
     }
 }

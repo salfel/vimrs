@@ -15,9 +15,11 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(_args: Vec<String>) -> Self {
+    pub fn new(args: Vec<String>) -> Self {
+        let filename = args.get(1).map_or(String::new(), |value| value.to_string());
+
         App {
-            buffers: vec![Buffer::new(String::new(), String::new())],
+            buffers: vec![Buffer::new(filename)],
             active_buffer: 0,
         }
     }
@@ -26,6 +28,8 @@ impl App {
         while !self.get_active_buffer().should_exit() {
             terminal.draw(|frame| self.render_frame(frame))?;
             self.handle_events()?;
+
+            self.get_active_buffer().run_actions();
         }
 
         Ok(())

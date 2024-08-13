@@ -11,6 +11,7 @@ pub struct Context {
     pub mode: Mode,
     pub exit: bool,
     pub print: String,
+    pub write: bool,
 }
 
 impl Context {
@@ -28,6 +29,7 @@ impl Context {
             mode: Mode::Normal,
             exit: false,
             print: String::new(),
+            write: false,
         }
     }
 
