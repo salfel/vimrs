@@ -1,9 +1,17 @@
-use std::cmp::min;
+use std::{cmp::min, fmt::format};
 
-use crate::context::{Context, Position};
+use crate::{
+    context::{Context, Position},
+    mode::Mode,
+};
 
 pub fn right(cx: &mut Context) -> Position {
-    if cx.cursor.col >= cx.row(cx.cursor.row).len() - 1 {
+    let mut row_len = cx.row(cx.cursor.row).len();
+    if let Mode::Normal = cx.mode {
+        row_len -= 1;
+    }
+
+    if cx.cursor.col >= row_len {
         if cx.cursor.row < cx.content.len() - 1 {
             Position {
                 row: cx.cursor.row + 1,
@@ -85,5 +93,69 @@ pub fn end_line(cx: &mut Context) -> Position {
         }
     } else {
         cx.cursor
+    }
+}
+
+const WORD_DELIMITER: [char; 10] = [' ', '(', ')', '[', ']', '{', '}', '$', '^', '!'];
+
+pub fn end_word(cx: &mut Context) -> Position {
+    match cx.content.get(cx.cursor.row) {
+        Some(line) => {
+            let iterator = line.chars().enumerate().skip(cx.cursor.col);
+
+            let mut prev = 'a';
+            for (idx, char) in iterator {
+                if WORD_DELIMITER.contains(&char)
+                    && !WORD_DELIMITER.contains(&prev)
+                    && idx - 1 != cx.cursor.col
+                {
+                    return Position {
+                        row: cx.cursor.row,
+                        col: idx - 1,
+                    };
+                }
+
+                prev = char;
+            }
+
+            Position {
+                row: cx.cursor.row,
+                col: if line.is_empty() { 0 } else { line.len() - 1 },
+            }
+        }
+        None => cx.cursor,
+    }
+}
+
+pub fn start_word(cx: &mut Context) -> Position {
+    match cx.content.get(cx.cursor.row) {
+        Some(line) => {
+            let iterator = line
+                .chars()
+                .rev()
+                .enumerate()
+                .skip(line.len() - 1 - cx.cursor.col);
+
+            let mut prev = ' ';
+            for (idx, char) in iterator {
+                if WORD_DELIMITER.contains(&char)
+                    && !WORD_DELIMITER.contains(&prev)
+                    && line.len() - idx != cx.cursor.col
+                {
+                    return Position {
+                        row: cx.cursor.row,
+                        col: line.len() - idx,
+                    };
+                }
+
+                prev = char;
+            }
+
+            Position {
+                row: cx.cursor.row,
+                col: 0,
+            }
+        }
+        None => cx.cursor,
     }
 }

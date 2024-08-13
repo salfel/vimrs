@@ -10,6 +10,7 @@ pub struct Context {
     pub keys: String,
     pub mode: Mode,
     pub exit: bool,
+    pub print: String,
 }
 
 impl Context {
@@ -26,6 +27,7 @@ impl Context {
             keys: String::new(),
             mode: Mode::Normal,
             exit: false,
+            print: String::new(),
         }
     }
 
@@ -40,8 +42,7 @@ impl Context {
     }
 
     pub fn row(&self, row: usize) -> &String {
-        &self
-            .content
+        self.content
             .get(row)
             .unwrap_or_else(|| panic!("row: {} doesn't exist", row))
     }

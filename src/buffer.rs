@@ -39,4 +39,8 @@ impl Buffer {
     pub fn should_exit(&self) -> bool {
         self.context.exit
     }
+
+    pub fn print(&self) -> String {
+        self.context.print.clone()
+    }
 }

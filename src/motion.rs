@@ -1,6 +1,6 @@
 use crate::{
     context::{Context, Position},
-    navigation::{down, end_line, left, right, start_line, up},
+    navigation::{down, end_line, end_word, left, right, start_line, start_word, up},
 };
 
 pub enum Motion {
@@ -10,6 +10,8 @@ pub enum Motion {
     Down,
     Start,
     End,
+    StartWord,
+    EndWord,
 }
 
 impl Motion {
@@ -21,6 +23,8 @@ impl Motion {
             "l" => Some(Motion::Right),
             "^" => Some(Motion::Start),
             "$" => Some(Motion::End),
+            "b" => Some(Motion::StartWord),
+            "e" => Some(Motion::EndWord),
             _ => None,
         }
     }
@@ -33,6 +37,8 @@ impl Motion {
             Motion::Right => right(cx),
             Motion::Start => start_line(cx),
             Motion::End => end_line(cx),
+            Motion::StartWord => start_word(cx),
+            Motion::EndWord => end_word(cx),
         }
     }
 }
