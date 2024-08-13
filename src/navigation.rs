@@ -35,7 +35,7 @@ pub fn left(cx: &mut Context) -> Position {
         } else {
             Position {
                 row: cx.cursor.row - 1,
-                col: cx.row(cx.cursor.row - 1).len() - 1,
+                col: cx.row(cx.cursor.row - 1).len().max(1) - 1,
             }
         }
     } else {
@@ -58,7 +58,7 @@ pub fn up(cx: &mut Context) -> Position {
 
     Position {
         row: cx.cursor.row - 1,
-        col: min(cx.cursor.col, prev_row.len() - 1),
+        col: min(cx.cursor.col, prev_row.len().max(1) - 1),
     }
 }
 
@@ -74,7 +74,7 @@ pub fn down(cx: &mut Context) -> Position {
 
     Position {
         row: cx.cursor.row + 1,
-        col: min(cx.cursor.col, next_row.len() - 1),
+        col: min(cx.cursor.col, next_row.len().max(1) - 1),
     }
 }
 
@@ -89,7 +89,7 @@ pub fn end_line(cx: &mut Context) -> Position {
     if let Some(row) = cx.content.get(cx.cursor.row) {
         Position {
             row: cx.cursor.row,
-            col: row.len() - 1,
+            col: row.len().max(1) - 1,
         }
     } else {
         cx.cursor
@@ -169,11 +169,7 @@ fn first_not_delimiter(line: &str) -> usize {
         }
     }
 
-    if line.is_empty() {
-        0
-    } else {
-        line.len() - 1
-    }
+    line.len().max(1) - 1
 }
 
 fn last_not_delimiter(line: &str) -> usize {
