@@ -1,4 +1,4 @@
-use std::{cmp::min, fmt::format};
+use std::cmp::min;
 
 use crate::{
     context::{Context, Position},
@@ -120,7 +120,7 @@ pub fn end_word(cx: &mut Context) -> Position {
 
             Position {
                 row: cx.cursor.row,
-                col: if line.is_empty() { 0 } else { line.len() - 1 },
+                col: last_not_delimiter(line),
             }
         }
         None => cx.cursor,
@@ -153,9 +153,37 @@ pub fn start_word(cx: &mut Context) -> Position {
 
             Position {
                 row: cx.cursor.row,
-                col: 0,
+                col: first_not_delimiter(line),
             }
         }
         None => cx.cursor,
     }
+}
+
+fn first_not_delimiter(line: &str) -> usize {
+    let iterator = line.chars().enumerate();
+
+    for (idx, char) in iterator {
+        if !WORD_DELIMITER.contains(&char) {
+            return idx;
+        }
+    }
+
+    if line.is_empty() {
+        0
+    } else {
+        line.len() - 1
+    }
+}
+
+fn last_not_delimiter(line: &str) -> usize {
+    let iterator = line.chars().rev().enumerate();
+
+    for (idx, char) in iterator {
+        if !WORD_DELIMITER.contains(&char) {
+            return line.len() - 1 - idx;
+        }
+    }
+
+    0
 }
