@@ -5,7 +5,7 @@ use insert::handle_insert_keys;
 use normal::handle_normal_keys;
 use ratatui::crossterm::event::KeyEvent;
 
-use crate::context::Context;
+use crate::buffer::Buffer;
 
 pub mod command;
 pub mod insert;
@@ -33,11 +33,11 @@ impl Display for Mode {
 }
 
 impl Mode {
-    pub fn handle_keys(&self, cx: &mut Context, event: KeyEvent) {
+    pub fn handle_keys(&self, buf: &mut Buffer, event: KeyEvent) {
         match self {
-            Mode::Insert => handle_insert_keys(cx, event),
-            Mode::Normal => handle_normal_keys(cx, event),
-            Mode::Command => handle_command_keys(cx, event),
+            Mode::Insert => handle_insert_keys(buf, event),
+            Mode::Normal => handle_normal_keys(buf, event),
+            Mode::Command => handle_command_keys(buf, event),
         }
     }
 }

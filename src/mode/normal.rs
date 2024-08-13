@@ -1,37 +1,37 @@
 use ratatui::crossterm::event::{KeyCode, KeyEvent};
 
-use crate::{context::Context, motion::Motion, navigation::right};
+use crate::{buffer::Buffer, motion::Motion, navigation::right};
 
 use super::Mode;
 
-pub fn handle_normal_keys(cx: &mut Context, event: KeyEvent) {
+pub fn handle_normal_keys(buf: &mut Buffer, event: KeyEvent) {
     match event.code {
-        KeyCode::Char(key) => handle_char(cx, key),
-        KeyCode::Esc => cx.keys = String::new(),
+        KeyCode::Char(key) => handle_char(buf, key),
+        KeyCode::Esc => buf.keys = String::new(),
         _ => {}
     }
 }
 
-fn handle_char(cx: &mut Context, key: char) {
-    cx.keys.push(key);
+fn handle_char(buf: &mut Buffer, key: char) {
+    buf.keys.push(key);
 
-    match Motion::new(&cx.keys) {
+    match Motion::new(&buf.keys) {
         Some(motion) => {
-            cx.cursor = motion.execute(cx);
-            cx.keys = String::new();
+            buf.cursor = motion.execute(buf);
+            buf.keys = String::new();
         }
-        None => execute_keybindings(cx),
+        None => execute_keybindings(buf),
     }
 }
 
-fn execute_keybindings(cx: &mut Context) {
-    match cx.keys.as_str() {
-        "i" => cx.change_mode(Mode::Insert),
+fn execute_keybindings(buf: &mut Buffer) {
+    match buf.keys.as_str() {
+        "i" => buf.change_mode(Mode::Insert),
         "a" => {
-            cx.change_mode(Mode::Insert);
-            cx.cursor = right(cx);
+            buf.change_mode(Mode::Insert);
+            buf.cursor = right(buf);
         }
-        ":" => cx.change_mode(Mode::Command),
+        ":" => buf.change_mode(Mode::Command),
         _ => {}
     }
 }

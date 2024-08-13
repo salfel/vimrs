@@ -25,11 +25,9 @@ impl App {
     }
 
     pub fn run(&mut self, terminal: &mut tui::Tui) -> io::Result<()> {
-        while !self.get_active_buffer().should_exit() {
+        while !self.get_active_buffer().exit {
             terminal.draw(|frame| self.render_frame(frame))?;
             self.handle_events()?;
-
-            self.get_active_buffer().run_actions();
         }
 
         Ok(())
@@ -40,13 +38,14 @@ impl App {
             .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
             .split(frame.size());
 
-        let paragraph = Paragraph::new(self.get_active_buffer().get_content().to_string());
+        let paragraph = Paragraph::new(self.get_active_buffer().content.join("\n").to_string());
         frame.render_widget(paragraph, layout[0]);
+
+        let active_buffer = self.get_active_buffer();
 
         let paragraph = Paragraph::new(format!(
             "-- {} --   {}",
-            self.get_active_buffer().get_mode(),
-            self.get_active_buffer().print()
+            active_buffer.mode, active_buffer.print
         ));
         frame.render_widget(paragraph, layout[1]);
 

@@ -1,6 +1,5 @@
 mod app;
 mod buffer;
-mod context;
 mod filesystem;
 mod mode;
 mod motion;

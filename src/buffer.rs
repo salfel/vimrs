@@ -1,7 +1,6 @@
 use ratatui::{crossterm::event::KeyEvent, style::Color, Frame};
 
 use crate::{
-    context::Context,
     filesystem::{read_file, write_file},
     mode::Mode,
 };
@@ -9,56 +8,66 @@ use crate::{
 #[allow(dead_code)]
 pub struct Buffer {
     pub filename: String,
-    context: Context,
+    pub content: Vec<String>,
+    pub cursor: Position,
+    pub keys: String,
+    pub mode: Mode,
+    pub exit: bool,
+    pub print: String,
 }
 
 impl Buffer {
     pub fn new(filename: String) -> Self {
-        let content = read_file(&filename);
+        let file_content = read_file(&filename);
+        let content = if file_content.is_empty() {
+            vec![String::new()]
+        } else {
+            file_content
+                .lines()
+                .map(String::from)
+                .collect::<Vec<String>>()
+        };
 
         Buffer {
             filename,
-            context: Context::new(content),
-        }
-    }
-
-    pub fn run_actions(&mut self) {
-        if self.context.write {
-            self.write_contents();
-
-            self.context.write = false;
+            content,
+            cursor: Position::default(),
+            keys: String::new(),
+            mode: Mode::Normal,
+            exit: false,
+            print: String::new(),
         }
     }
 
     pub fn render_cursor(&self, frame: &mut Frame) {
-        let cell = frame.buffer_mut().get_mut(
-            self.context.cursor.col as u16,
-            self.context.cursor.row as u16,
-        );
+        let cell = frame
+            .buffer_mut()
+            .get_mut(self.cursor.col as u16, self.cursor.row as u16);
         cell.set_bg(Color::White).set_fg(Color::Black);
     }
 
-    pub fn get_content(&self) -> String {
-        self.context.content.join("\n")
-    }
-
-    pub fn get_mode(&self) -> Mode {
-        self.context.mode
-    }
-
     pub fn handle_keys(&mut self, event: KeyEvent) {
-        self.context.handle_keys(event);
+        self.mode.clone().handle_keys(self, event);
     }
 
-    pub fn should_exit(&self) -> bool {
-        self.context.exit
+    pub fn write(&self) {
+        write_file(&self.filename, &self.content.join("\n"));
     }
 
-    pub fn print(&self) -> String {
-        self.context.print.clone()
+    pub fn change_mode(&mut self, mode: Mode) {
+        self.mode = mode;
+        self.keys = String::new();
     }
 
-    fn write_contents(&self) {
-        write_file(&self.filename, &self.context.content.join("\n"));
+    pub fn row(&self, row: usize) -> &String {
+        self.content
+            .get(row)
+            .unwrap_or_else(|| panic!("row: {} doesn't exist", row))
     }
+}
+
+#[derive(Default, Clone, Copy)]
+pub struct Position {
+    pub col: usize,
+    pub row: usize,
 }

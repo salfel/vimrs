@@ -1,116 +1,116 @@
 use std::cmp::min;
 
 use crate::{
-    context::{Context, Position},
+    buffer::{Buffer, Position},
     mode::Mode,
 };
 
-pub fn right(cx: &mut Context) -> Position {
-    let mut row_len = cx.row(cx.cursor.row).len();
-    if let Mode::Normal = cx.mode {
+pub fn right(buf: &mut Buffer) -> Position {
+    let mut row_len = buf.row(buf.cursor.row).len();
+    if let Mode::Normal = buf.mode {
         row_len -= 1;
     }
 
-    if cx.cursor.col >= row_len {
-        if cx.cursor.row < cx.content.len() - 1 {
+    if buf.cursor.col >= row_len {
+        if buf.cursor.row < buf.content.len() - 1 {
             Position {
-                row: cx.cursor.row + 1,
+                row: buf.cursor.row + 1,
                 col: 0,
             }
         } else {
-            cx.cursor
+            buf.cursor
         }
     } else {
         Position {
-            row: cx.cursor.row,
-            col: cx.cursor.col + 1,
+            row: buf.cursor.row,
+            col: buf.cursor.col + 1,
         }
     }
 }
 
-pub fn left(cx: &mut Context) -> Position {
-    if cx.cursor.col == 0 {
-        if cx.cursor.row == 0 {
-            cx.cursor
+pub fn left(buf: &mut Buffer) -> Position {
+    if buf.cursor.col == 0 {
+        if buf.cursor.row == 0 {
+            buf.cursor
         } else {
             Position {
-                row: cx.cursor.row - 1,
-                col: cx.row(cx.cursor.row - 1).len().max(1) - 1,
+                row: buf.cursor.row - 1,
+                col: buf.row(buf.cursor.row - 1).len().max(1) - 1,
             }
         }
     } else {
         Position {
-            row: cx.cursor.row,
-            col: cx.cursor.col - 1,
+            row: buf.cursor.row,
+            col: buf.cursor.col - 1,
         }
     }
 }
 
-pub fn up(cx: &mut Context) -> Position {
-    if cx.cursor.row == 0 {
-        return cx.cursor;
+pub fn up(buf: &mut Buffer) -> Position {
+    if buf.cursor.row == 0 {
+        return buf.cursor;
     }
 
-    let prev_row = cx
+    let prev_row = buf
         .content
-        .get(cx.cursor.row - 1)
-        .unwrap_or_else(|| panic!("row: {} doesn't exist", cx.cursor.row));
+        .get(buf.cursor.row - 1)
+        .unwrap_or_else(|| panic!("row: {} doesn't exist", buf.cursor.row));
 
     Position {
-        row: cx.cursor.row - 1,
-        col: min(cx.cursor.col, prev_row.len().max(1) - 1),
+        row: buf.cursor.row - 1,
+        col: min(buf.cursor.col, prev_row.len().max(1) - 1),
     }
 }
 
-pub fn down(cx: &mut Context) -> Position {
-    if cx.cursor.row >= cx.content.len() - 1 {
-        return cx.cursor;
+pub fn down(buf: &mut Buffer) -> Position {
+    if buf.cursor.row >= buf.content.len() - 1 {
+        return buf.cursor;
     }
 
-    let next_row = cx
+    let next_row = buf
         .content
-        .get(cx.cursor.row + 1)
-        .unwrap_or_else(|| panic!("row: {}, doesn't exist", cx.cursor.row));
+        .get(buf.cursor.row + 1)
+        .unwrap_or_else(|| panic!("row: {}, doesn't exist", buf.cursor.row));
 
     Position {
-        row: cx.cursor.row + 1,
-        col: min(cx.cursor.col, next_row.len().max(1) - 1),
+        row: buf.cursor.row + 1,
+        col: min(buf.cursor.col, next_row.len().max(1) - 1),
     }
 }
 
-pub fn start_line(cx: &mut Context) -> Position {
+pub fn start_line(buf: &mut Buffer) -> Position {
     Position {
-        row: cx.cursor.row,
+        row: buf.cursor.row,
         col: 0,
     }
 }
 
-pub fn end_line(cx: &mut Context) -> Position {
-    if let Some(row) = cx.content.get(cx.cursor.row) {
+pub fn end_line(buf: &mut Buffer) -> Position {
+    if let Some(row) = buf.content.get(buf.cursor.row) {
         Position {
-            row: cx.cursor.row,
+            row: buf.cursor.row,
             col: row.len().max(1) - 1,
         }
     } else {
-        cx.cursor
+        buf.cursor
     }
 }
 
 const WORD_DELIMITER: [char; 10] = [' ', '(', ')', '[', ']', '{', '}', '$', '^', '!'];
 
-pub fn end_word(cx: &mut Context) -> Position {
-    match cx.content.get(cx.cursor.row) {
+pub fn end_word(buf: &mut Buffer) -> Position {
+    match buf.content.get(buf.cursor.row) {
         Some(line) => {
-            let iterator = line.chars().enumerate().skip(cx.cursor.col);
+            let iterator = line.chars().enumerate().skip(buf.cursor.col);
 
             let mut prev = 'a';
             for (idx, char) in iterator {
                 if WORD_DELIMITER.contains(&char)
                     && !WORD_DELIMITER.contains(&prev)
-                    && idx - 1 != cx.cursor.col
+                    && idx - 1 != buf.cursor.col
                 {
                     return Position {
-                        row: cx.cursor.row,
+                        row: buf.cursor.row,
                         col: idx - 1,
                     };
                 }
@@ -119,31 +119,31 @@ pub fn end_word(cx: &mut Context) -> Position {
             }
 
             Position {
-                row: cx.cursor.row,
+                row: buf.cursor.row,
                 col: last_not_delimiter(line),
             }
         }
-        None => cx.cursor,
+        None => buf.cursor,
     }
 }
 
-pub fn start_word(cx: &mut Context) -> Position {
-    match cx.content.get(cx.cursor.row) {
+pub fn start_word(buf: &mut Buffer) -> Position {
+    match buf.content.get(buf.cursor.row) {
         Some(line) => {
             let iterator = line
                 .chars()
                 .rev()
                 .enumerate()
-                .skip(line.len() - 1 - cx.cursor.col);
+                .skip(line.len() - 1 - buf.cursor.col);
 
             let mut prev = ' ';
             for (idx, char) in iterator {
                 if WORD_DELIMITER.contains(&char)
                     && !WORD_DELIMITER.contains(&prev)
-                    && line.len() - idx != cx.cursor.col
+                    && line.len() - idx != buf.cursor.col
                 {
                     return Position {
-                        row: cx.cursor.row,
+                        row: buf.cursor.row,
                         col: line.len() - idx,
                     };
                 }
@@ -152,11 +152,11 @@ pub fn start_word(cx: &mut Context) -> Position {
             }
 
             Position {
-                row: cx.cursor.row,
+                row: buf.cursor.row,
                 col: first_not_delimiter(line),
             }
         }
-        None => cx.cursor,
+        None => buf.cursor,
     }
 }
 

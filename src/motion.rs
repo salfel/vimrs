@@ -1,5 +1,5 @@
 use crate::{
-    context::{Context, Position},
+    buffer::{Buffer, Position},
     navigation::{down, end_line, end_word, left, right, start_line, start_word, up},
 };
 
@@ -29,16 +29,16 @@ impl Motion {
         }
     }
 
-    pub fn execute(self, cx: &mut Context) -> Position {
+    pub fn execute(self, buf: &mut Buffer) -> Position {
         match self {
-            Motion::Left => left(cx),
-            Motion::Down => down(cx),
-            Motion::Up => up(cx),
-            Motion::Right => right(cx),
-            Motion::Start => start_line(cx),
-            Motion::End => end_line(cx),
-            Motion::StartWord => start_word(cx),
-            Motion::EndWord => end_word(cx),
+            Motion::Left => left(buf),
+            Motion::Down => down(buf),
+            Motion::Up => up(buf),
+            Motion::Right => right(buf),
+            Motion::Start => start_line(buf),
+            Motion::End => end_line(buf),
+            Motion::StartWord => start_word(buf),
+            Motion::EndWord => end_word(buf),
         }
     }
 }
