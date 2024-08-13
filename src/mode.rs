@@ -1,11 +1,13 @@
 use std::fmt::Display;
 
+use command::handle_command_keys;
 use insert::handle_insert_keys;
 use normal::handle_normal_keys;
 use ratatui::crossterm::event::KeyEvent;
 
 use crate::context::Context;
 
+pub mod command;
 pub mod insert;
 pub mod normal;
 
@@ -13,6 +15,7 @@ pub mod normal;
 pub enum Mode {
     Normal,
     Insert,
+    Command,
 }
 
 impl Display for Mode {
@@ -21,8 +24,9 @@ impl Display for Mode {
             f,
             "{}",
             match self {
-                Mode::Normal => String::from("Normal"),
-                Mode::Insert => String::from("Insert"),
+                Mode::Normal => "Normal",
+                Mode::Insert => "Insert",
+                Mode::Command => "Command",
             }
         )
     }
@@ -31,8 +35,9 @@ impl Display for Mode {
 impl Mode {
     pub fn handle_keys(&self, cx: &mut Context, event: KeyEvent) {
         match self {
-            Self::Insert => handle_insert_keys(cx, event),
-            Self::Normal => handle_normal_keys(cx, event),
+            Mode::Insert => handle_insert_keys(cx, event),
+            Mode::Normal => handle_normal_keys(cx, event),
+            Mode::Command => handle_command_keys(cx, event),
         }
     }
 }

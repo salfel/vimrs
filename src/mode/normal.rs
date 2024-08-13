@@ -26,13 +26,12 @@ fn handle_char(cx: &mut Context, key: char) {
 
 fn execute_keybindings(cx: &mut Context) {
     match cx.keys.as_str() {
-        "i" => {
-            cx.change_mode(Mode::Insert);
-        }
+        "i" => cx.change_mode(Mode::Insert),
         "a" => {
             cx.change_mode(Mode::Insert);
             cx.cursor = right(cx);
         }
+        ":" => cx.change_mode(Mode::Command),
         _ => {}
     }
 }

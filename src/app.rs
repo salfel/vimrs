@@ -10,7 +10,6 @@ use ratatui::{
 use crate::{buffer::Buffer, tui};
 
 pub struct App {
-    exit: bool,
     buffers: Vec<Buffer>,
     active_buffer: usize,
 }
@@ -18,14 +17,13 @@ pub struct App {
 impl App {
     pub fn new(_args: Vec<String>) -> Self {
         App {
-            exit: false,
             buffers: vec![Buffer::new(String::new(), String::new())],
             active_buffer: 0,
         }
     }
 
     pub fn run(&mut self, terminal: &mut tui::Tui) -> io::Result<()> {
-        while !self.exit {
+        while !self.get_active_buffer().should_exit() {
             terminal.draw(|frame| self.render_frame(frame))?;
             self.handle_events()?;
         }

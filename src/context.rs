@@ -9,6 +9,7 @@ pub struct Context {
     pub cursor: Position,
     pub keys: String,
     pub mode: Mode,
+    pub exit: bool,
 }
 
 impl Context {
@@ -24,6 +25,7 @@ impl Context {
             cursor: Position::default(),
             keys: String::new(),
             mode: Mode::Normal,
+            exit: false,
         }
     }
 

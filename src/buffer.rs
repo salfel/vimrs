@@ -35,4 +35,8 @@ impl Buffer {
     pub fn handle_keys(&mut self, event: KeyEvent) {
         self.context.handle_keys(event);
     }
+
+    pub fn should_exit(&self) -> bool {
+        self.context.exit
+    }
 }
