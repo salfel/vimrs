@@ -96,67 +96,57 @@ pub fn end_line(buf: &mut Buffer) -> Position {
     }
 }
 
-const WORD_DELIMITER: [char; 10] = [' ', '(', ')', '[', ']', '{', '}', '$', '^', '!'];
+const WORD_DELIMITERS: [char; 12] = ['(', ')', '[', ']', '{', '}', '$', '^', '!', '.', ',', ' '];
 
 pub fn end_word(buf: &mut Buffer) -> Position {
-    match buf.content.get(buf.cursor.row) {
-        Some(line) => {
-            let iterator = line.chars().enumerate().skip(buf.cursor.col);
+    let line = buf.row(buf.cursor.row);
+    let mut iterator = line.chars().enumerate().skip(buf.cursor.col);
 
-            let mut prev = 'a';
-            for (idx, char) in iterator {
-                if WORD_DELIMITER.contains(&char)
-                    && !WORD_DELIMITER.contains(&prev)
-                    && idx - 1 != buf.cursor.col
-                {
-                    return Position {
-                        row: buf.cursor.row,
-                        col: idx - 1,
-                    };
-                }
-
-                prev = char;
-            }
-
-            Position {
+    let mut prev = iterator.next().unwrap().1;
+    for (idx, char) in iterator {
+        if ((is_word_delimiter(char) && !is_word_delimiter(prev)) || (char == ' ' && prev != ' '))
+            && idx - 1 != buf.cursor.col
+        {
+            return Position {
                 row: buf.cursor.row,
-                col: last_not_delimiter(line),
-            }
+                col: idx - 1,
+            };
         }
-        None => buf.cursor,
+
+        prev = char;
+    }
+
+    Position {
+        row: buf.cursor.row,
+        col: last_not_delimiter(line),
     }
 }
 
 pub fn start_word(buf: &mut Buffer) -> Position {
-    match buf.content.get(buf.cursor.row) {
-        Some(line) => {
-            let iterator = line
-                .chars()
-                .rev()
-                .enumerate()
-                .skip(line.len() - 1 - buf.cursor.col);
+    let line = buf.row(buf.cursor.row);
+    let mut iterator = line
+        .chars()
+        .rev()
+        .enumerate()
+        .skip(line.len() - buf.cursor.col);
 
-            let mut prev = ' ';
-            for (idx, char) in iterator {
-                if WORD_DELIMITER.contains(&char)
-                    && !WORD_DELIMITER.contains(&prev)
-                    && line.len() - idx != buf.cursor.col
-                {
-                    return Position {
-                        row: buf.cursor.row,
-                        col: line.len() - idx,
-                    };
-                }
-
-                prev = char;
-            }
-
-            Position {
+    let mut prev = iterator.next().unwrap().1;
+    for (idx, char) in iterator {
+        if ((is_word_delimiter(char) && !is_word_delimiter(prev)) || (char == ' ' && prev != ' '))
+            && line.len() - idx != buf.cursor.col
+        {
+            return Position {
                 row: buf.cursor.row,
-                col: first_not_delimiter(line),
-            }
+                col: line.len() - idx,
+            };
         }
-        None => buf.cursor,
+
+        prev = char;
+    }
+
+    Position {
+        row: buf.cursor.row,
+        col: first_not_delimiter(line),
     }
 }
 
@@ -164,7 +154,7 @@ fn first_not_delimiter(line: &str) -> usize {
     let iterator = line.chars().enumerate();
 
     for (idx, char) in iterator {
-        if !WORD_DELIMITER.contains(&char) {
+        if !WORD_DELIMITERS.contains(&char) {
             return idx;
         }
     }
@@ -176,10 +166,14 @@ fn last_not_delimiter(line: &str) -> usize {
     let iterator = line.chars().rev().enumerate();
 
     for (idx, char) in iterator {
-        if !WORD_DELIMITER.contains(&char) {
+        if !WORD_DELIMITERS.contains(&char) {
             return line.len() - 1 - idx;
         }
     }
 
     0
+}
+
+fn is_word_delimiter(char: char) -> bool {
+    WORD_DELIMITERS.contains(&char)
 }
