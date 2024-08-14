@@ -102,7 +102,10 @@ pub fn end_word(buf: &mut Buffer) -> Position {
     let line = buf.row(buf.cursor.row);
     let mut iterator = line.chars().enumerate().skip(buf.cursor.col);
 
-    let mut prev = iterator.next().unwrap().1;
+    let mut prev = match iterator.next() {
+        Some(item) => item.1,
+        None => return buf.cursor,
+    };
     for (idx, char) in iterator {
         if ((is_word_delimiter(char) && !is_word_delimiter(prev)) || (char == ' ' && prev != ' '))
             && idx - 1 != buf.cursor.col
@@ -118,25 +121,37 @@ pub fn end_word(buf: &mut Buffer) -> Position {
 
     Position {
         row: buf.cursor.row,
-        col: last_not_delimiter(line),
+        col: line.len().max(1) - 1,
     }
 }
 
 pub fn start_word(buf: &mut Buffer) -> Position {
-    let line = buf.row(buf.cursor.row);
-    let mut iterator = line
-        .chars()
-        .rev()
-        .enumerate()
-        .skip(line.len() - buf.cursor.col);
+    let mut line = buf.row(buf.cursor.row);
+    let mut cursor = buf.cursor;
+    let mut skip = line.len() - cursor.col;
 
-    let mut prev = iterator.next().unwrap().1;
+    if cursor.col == 0 {
+        if cursor.row == 0 {
+            return Position { row: 0, col: 0 };
+        }
+
+        cursor.row -= 1;
+        line = buf.row(cursor.row);
+        skip = 0;
+    }
+
+    let mut iterator = line.chars().rev().enumerate().skip(skip);
+    let mut prev = match iterator.next() {
+        Some(item) => item.1,
+        None => return cursor,
+    };
+
     for (idx, char) in iterator {
-        if ((is_word_delimiter(char) && !is_word_delimiter(prev)) || (char == ' ' && prev != ' '))
-            && line.len() - idx != buf.cursor.col
+        if ((is_word_delimiter(char) && (!is_word_delimiter(prev))) || (char == ' ' && prev != ' '))
+            && line.len() - idx != cursor.col
         {
             return Position {
-                row: buf.cursor.row,
+                row: cursor.row,
                 col: line.len() - idx,
             };
         }
@@ -145,8 +160,8 @@ pub fn start_word(buf: &mut Buffer) -> Position {
     }
 
     Position {
-        row: buf.cursor.row,
-        col: first_not_delimiter(line),
+        row: cursor.row,
+        col: 0,
     }
 }
 
