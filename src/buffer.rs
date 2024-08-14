@@ -1,4 +1,4 @@
-use ratatui::{crossterm::event::KeyEvent, style::Color, Frame};
+use ratatui::{buffer::Buffer as TBuffer, crossterm::event::KeyEvent, style::Color, Frame};
 
 use crate::{
     filesystem::{read_file, write_file},
@@ -39,10 +39,8 @@ impl Buffer {
         }
     }
 
-    pub fn render_cursor(&self, frame: &mut Frame) {
-        let cell = frame
-            .buffer_mut()
-            .get_mut(self.cursor.col as u16, self.cursor.row as u16);
+    pub fn render_cursor(&self, buf: &mut TBuffer) {
+        let cell = buf.get_mut(self.cursor.col as u16, self.cursor.row as u16);
         cell.set_bg(Color::White).set_fg(Color::Black);
     }
 

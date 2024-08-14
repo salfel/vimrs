@@ -3,7 +3,8 @@ use std::{io, time::Duration};
 use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
     layout::{Constraint, Layout},
-    widgets::Paragraph,
+    prelude::{Buffer as TBuffer, Rect},
+    widgets::{Paragraph, Widget},
     Frame,
 };
 
@@ -34,22 +35,7 @@ impl App {
     }
 
     fn render_frame(&mut self, frame: &mut Frame) {
-        let layout = Layout::default()
-            .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
-            .split(frame.size());
-
-        let paragraph = Paragraph::new(self.get_active_buffer().content.join("\n").to_string());
-        frame.render_widget(paragraph, layout[0]);
-
-        let active_buffer = self.get_active_buffer();
-
-        let paragraph = Paragraph::new(format!(
-            "-- {} --   {}",
-            active_buffer.mode, active_buffer.print
-        ));
-        frame.render_widget(paragraph, layout[1]);
-
-        self.get_active_buffer().render_cursor(frame);
+        self.render(frame.size(), frame.buffer_mut());
     }
 
     fn handle_events(&mut self) -> io::Result<()> {
@@ -67,5 +53,24 @@ impl App {
 
     fn get_active_buffer(&mut self) -> &mut Buffer {
         &mut self.buffers[self.active_buffer]
+    }
+}
+
+impl Widget for &App {
+    fn render(self, area: Rect, buf: &mut TBuffer) {
+        let active_buffer = &self.buffers[self.active_buffer];
+        let layout = Layout::default()
+            .constraints(vec![Constraint::Min(1), Constraint::Length(1)])
+            .split(area);
+
+        Paragraph::new(active_buffer.content.join("\n").to_string()).render(layout[0], buf);
+
+        Paragraph::new(format!(
+            "-- {} --   {}",
+            active_buffer.mode, active_buffer.print
+        ))
+        .render(layout[1], buf);
+
+        active_buffer.render_cursor(buf);
     }
 }
