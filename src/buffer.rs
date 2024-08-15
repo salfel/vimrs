@@ -69,6 +69,15 @@ impl Buffer {
             .get(row)
             .unwrap_or_else(|| panic!("row: {} doesn't exist", row))
     }
+
+    #[cfg(test)]
+    pub fn input_text(&mut self, text: &str) {
+        use ratatui::crossterm::event::{KeyCode, KeyModifiers};
+
+        for char in text.chars() {
+            self.handle_keys(KeyEvent::new(KeyCode::Char(char), KeyModifiers::NONE));
+        }
+    }
 }
 
 #[derive(Default, Clone, Copy, Debug, PartialEq)]
