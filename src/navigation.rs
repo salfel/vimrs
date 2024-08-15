@@ -82,22 +82,36 @@ pub fn end_line(buf: &Buffer) -> Position {
     }
 }
 
-const WORD_DELIMITERS: [char; 12] = ['(', ')', '[', ']', '{', '}', '$', '^', '!', '.', ',', ' '];
+const WORD_DELIMITERS: [char; 11] = ['(', ')', '[', ']', '{', '}', '$', '^', '!', '.', ','];
 
-pub fn end_word(buf: &Buffer) -> Position {
+#[allow(clippy::iter_skip_zero)]
+pub fn word_end(buf: &Buffer) -> Position {
     let line = buf.row(buf.cursor.row);
-    let mut iterator = line.chars().enumerate().skip(buf.cursor.col);
+    let mut cursor = buf.cursor;
 
-    let mut prev = match iterator.next() {
-        Some(item) => item.1,
-        None => return buf.cursor,
+    let (iterator, mut prev) = if buf.cursor.col == last_not_whitespace(line) {
+        match buf.content.get(buf.cursor.row + 1) {
+            Some(line) => {
+                cursor.row += 1;
+                (line.chars().enumerate().skip(0), ' ')
+            }
+            None => return buf.cursor,
+        }
+    } else {
+        let mut iterator = line.chars().enumerate().skip(buf.cursor.col);
+        let prev = match iterator.next() {
+            Some(item) => item.1,
+            None => return buf.cursor,
+        };
+        (iterator, prev)
     };
+
     for (idx, char) in iterator {
         if ((is_word_delimiter(char) && !is_word_delimiter(prev)) || (char == ' ' && prev != ' '))
-            && idx - 1 != buf.cursor.col
+            && idx - 1 != cursor.col
         {
             return Position {
-                row: buf.cursor.row,
+                row: cursor.row,
                 col: idx - 1,
             };
         }
@@ -106,30 +120,36 @@ pub fn end_word(buf: &Buffer) -> Position {
     }
 
     Position {
-        row: buf.cursor.row,
-        col: line.len().max(1) - 1,
+        row: cursor.row,
+        col: last_not_whitespace(line),
     }
 }
 
-pub fn start_word(buf: &Buffer) -> Position {
+#[allow(clippy::iter_skip_zero)]
+pub fn prev_word_start(buf: &Buffer) -> Position {
     let mut line = buf.row(buf.cursor.row);
     let mut cursor = buf.cursor;
-    let mut skip = line.len() - cursor.col;
 
-    if cursor.col == 0 {
-        if cursor.row == 0 {
-            return Position { row: 0, col: 0 };
+    let (iterator, mut prev) = if cursor.col == first_not_whitespace(line) && cursor.row != 0 {
+        match buf.content.get(cursor.row - 1) {
+            Some(row) => {
+                cursor.row -= 1;
+                line = row;
+                (line.chars().rev().enumerate().skip(0), ' ')
+            }
+            None => return buf.cursor,
         }
-
-        cursor.row -= 1;
-        line = buf.row(cursor.row);
-        skip = 0;
-    }
-
-    let mut iterator = line.chars().rev().enumerate().skip(skip);
-    let mut prev = match iterator.next() {
-        Some(item) => item.1,
-        None => return cursor,
+    } else {
+        let mut iterator = line
+            .chars()
+            .rev()
+            .enumerate()
+            .skip(line.len() - 1 - cursor.col);
+        let prev = match iterator.next() {
+            Some(item) => item.1,
+            None => return buf.cursor,
+        };
+        (iterator, prev)
     };
 
     for (idx, char) in iterator {
@@ -138,7 +158,7 @@ pub fn start_word(buf: &Buffer) -> Position {
         {
             return Position {
                 row: cursor.row,
-                col: line.len() - idx,
+                col: line.len() - 1 - idx,
             };
         }
 
@@ -147,12 +167,36 @@ pub fn start_word(buf: &Buffer) -> Position {
 
     Position {
         row: cursor.row,
-        col: 0,
+        col: first_not_whitespace(line),
     }
 }
 
 fn is_word_delimiter(char: char) -> bool {
     WORD_DELIMITERS.contains(&char)
+}
+
+fn last_not_whitespace(line: &str) -> usize {
+    let mut iterator = line.chars().rev().enumerate().filter_map(|value| {
+        if value.1 != ' ' {
+            Some(line.len() - 1 - value.0)
+        } else {
+            None
+        }
+    });
+
+    match iterator.next() {
+        Some(idx) => idx,
+        None => line.len().max(1) - 1,
+    }
+}
+
+fn first_not_whitespace(line: &str) -> usize {
+    let mut iterator =
+        line.chars()
+            .enumerate()
+            .filter_map(|value| if value.1 != ' ' { Some(value.0) } else { None });
+
+    iterator.next().unwrap_or_default()
 }
 
 #[cfg(test)]
@@ -176,7 +220,7 @@ mod tests {
         let mut buf = Buffer::new(String::from("test.txt"));
 
         buf.cursor = Position { row: 1, col: 28 };
-        assert_eq!(up(&buf), Position { row: 0, col: 21 });
+        assert_eq!(up(&buf), Position { row: 0, col: 22 });
 
         buf.cursor = Position { row: 0, col: 0 };
         assert_eq!(up(&buf), buf.cursor);
@@ -199,7 +243,7 @@ mod tests {
 
         assert_eq!(right(&buf), Position { row: 0, col: 1 });
 
-        buf.cursor = Position { row: 0, col: 21 };
+        buf.cursor = Position { row: 0, col: 22 };
         assert_eq!(right(&buf), buf.cursor);
     }
 
@@ -207,7 +251,7 @@ mod tests {
     fn cursor_end() {
         let buf = Buffer::new(String::from("test.txt"));
 
-        assert_eq!(end_line(&buf), Position { row: 0, col: 21 });
+        assert_eq!(end_line(&buf), Position { row: 0, col: 22 });
     }
 
     #[test]
@@ -216,5 +260,45 @@ mod tests {
         buf.cursor = Position { row: 0, col: 15 };
 
         assert_eq!(start_line(&buf), Position { row: 0, col: 0 });
+    }
+
+    #[test]
+    fn cursor_word_end() {
+        let mut buf = Buffer::new(String::from("test.txt"));
+        assert_eq!(word_end(&buf), Position { row: 0, col: 4 });
+
+        buf.cursor = Position { row: 0, col: 17 };
+        buf.cursor = word_end(&buf);
+        assert_eq!(buf.cursor, Position { row: 0, col: 20 });
+
+        buf.cursor = word_end(&buf);
+        assert_eq!(buf.cursor, Position { row: 0, col: 21 });
+
+        // new line
+        assert_eq!(word_end(&buf), Position { row: 1, col: 11 });
+    }
+
+    #[test]
+    fn cursor_prev_word_start() {
+        let mut buf = Buffer::new(String::from("test.txt"));
+        assert_eq!(prev_word_start(&buf), Position { row: 0, col: 0 });
+
+        buf.cursor = Position { row: 0, col: 6 };
+        assert_eq!(prev_word_start(&buf), Position { row: 0, col: 0 });
+
+        buf.cursor = Position { row: 1, col: 0 };
+        assert_eq!(prev_word_start(&buf), Position { row: 0, col: 21 });
+    }
+
+    #[test]
+    fn first_not_whitespace_test() {
+        let line = " This is a string";
+        assert_eq!(first_not_whitespace(line), 1);
+    }
+
+    #[test]
+    fn last_not_whitespace_test() {
+        let line = "This is a string ";
+        assert_eq!(last_not_whitespace(line), 15);
     }
 }

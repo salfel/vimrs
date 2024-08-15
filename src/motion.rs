@@ -1,6 +1,6 @@
 use crate::{
     buffer::{Buffer, Position},
-    navigation::{down, end_line, end_word, left, right, start_line, start_word, up},
+    navigation::{down, end_line, left, prev_word_start, right, start_line, up, word_end},
 };
 
 #[cfg(test)]
@@ -44,8 +44,8 @@ impl Motion {
             Motion::Right => right(buf),
             Motion::Start => start_line(buf),
             Motion::End => end_line(buf),
-            Motion::StartWord => start_word(buf),
-            Motion::EndWord => end_word(buf),
+            Motion::StartWord => prev_word_start(buf),
+            Motion::EndWord => word_end(buf),
         }
     }
 }
