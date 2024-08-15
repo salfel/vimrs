@@ -1,14 +1,13 @@
-use std::fs;
+use std::{fs, io};
 
-// TODO return result
-pub fn read_file(filename: &str) -> String {
-    match fs::read_to_string(filename) {
-        Ok(contents) => contents,
-        Err(_) => String::new(),
+pub fn read_file(filename: &str) -> io::Result<String> {
+    if filename.is_empty() {
+        Ok(String::new())
+    } else {
+        fs::read_to_string(filename)
     }
 }
 
-// TODO return result
-pub fn write_file(filename: &str, contents: &str) {
-    let _ = fs::write(filename, contents);
+pub fn write_file(filename: &str, contents: &str) -> io::Result<()> {
+    fs::write(filename, contents)
 }

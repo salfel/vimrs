@@ -45,7 +45,7 @@ mod tests {
     use super::*;
 
     fn assert_written(filename: &str, content: &str) {
-        assert_eq!(read_file(filename), content);
+        assert_eq!(read_file(filename).unwrap(), content);
         fs::remove_file(filename).unwrap();
     }
 

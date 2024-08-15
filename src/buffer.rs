@@ -1,4 +1,9 @@
-use ratatui::{buffer::Buffer as TBuffer, crossterm::event::KeyEvent, style::Color};
+use ratatui::{
+    buffer::Buffer as TBuffer,
+    crossterm::event::KeyEvent,
+    style::{Color, Style},
+    text::Span,
+};
 
 use crate::{
     filesystem::{read_file, write_file},
@@ -16,7 +21,7 @@ pub struct Buffer {
     pub keys: String,
     pub mode: Mode,
     pub exit: bool,
-    pub print: String,
+    message: Output,
     #[cfg(test)]
     pub events: Vec<Event>,
     #[cfg(test)]
@@ -25,14 +30,14 @@ pub struct Buffer {
 
 impl Buffer {
     pub fn new(filename: String) -> Self {
-        let file_content = read_file(&filename);
-        let content = if file_content.is_empty() {
-            vec![String::new()]
-        } else {
-            file_content
-                .lines()
-                .map(String::from)
-                .collect::<Vec<String>>()
+        let (content, error) = Self::get_content(&filename);
+
+        let message = match error {
+            Some(message) => Output {
+                message,
+                error: true,
+            },
+            None => Output::default(),
         };
 
         Buffer {
@@ -42,11 +47,26 @@ impl Buffer {
             keys: String::new(),
             mode: Mode::Normal,
             exit: false,
-            print: String::new(),
+            message,
             #[cfg(test)]
             events: Vec::new(),
             #[cfg(test)]
             write: false,
+        }
+    }
+
+    fn get_content(filename: &str) -> (Vec<String>, Option<String>) {
+        match read_file(filename) {
+            Ok(content) => {
+                let content = if content.is_empty() {
+                    vec![String::new()]
+                } else {
+                    content.lines().map(String::from).collect()
+                };
+
+                (content, None)
+            }
+            Err(msg) => (vec![String::new()], Some(msg.to_string())),
         }
     }
 
@@ -59,8 +79,11 @@ impl Buffer {
         self.mode.clone().handle_keys(self, event);
     }
 
-    pub fn write(&self) {
-        write_file(&self.filename, &self.content.join("\n"));
+    pub fn write(&mut self) {
+        if let Err(msg) = write_file(&self.filename, &self.content.join("\n")) {
+            self.message.message = msg.to_string();
+            self.message.error = true;
+        }
     }
 
     pub fn change_mode(&mut self, mode: Mode) {
@@ -74,6 +97,14 @@ impl Buffer {
             .unwrap_or_else(|| panic!("row: {} doesn't exist", row))
     }
 
+    pub fn message(&self) -> Span {
+        if self.message.error {
+            Span::styled(&self.message.message, Style::default().fg(Color::Red))
+        } else {
+            Span::raw(&self.message.message)
+        }
+    }
+
     #[cfg(test)]
     pub fn input_keys(&mut self, text: &str) {
         use ratatui::crossterm::event::{KeyCode, KeyModifiers};
@@ -82,6 +113,12 @@ impl Buffer {
             self.handle_keys(KeyEvent::new(KeyCode::Char(char), KeyModifiers::NONE));
         }
     }
+}
+
+#[derive(Default)]
+struct Output {
+    message: String,
+    error: bool,
 }
 
 #[derive(Default, Clone, Copy, Debug, PartialEq)]
@@ -111,7 +148,7 @@ mod tests {
         buf.content[0] = String::from("test");
         buf.write();
 
-        assert_eq!(read_file(&filename), "test");
+        assert_eq!(read_file(&filename).unwrap(), "test");
         fs::remove_file(filename).unwrap();
     }
 }

@@ -4,6 +4,7 @@ use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
     layout::{Constraint, Layout},
     prelude::{Buffer as TBuffer, Rect},
+    text::{Line, Span},
     widgets::{Paragraph, Widget},
     Frame,
 };
@@ -65,10 +66,10 @@ impl Widget for &App {
 
         Paragraph::new(active_buffer.content.join("\n").to_string()).render(layout[0], buf);
 
-        Paragraph::new(format!(
-            "-- {} --   {}",
-            active_buffer.mode, active_buffer.print
-        ))
+        Paragraph::new(Line::from(vec![
+            Span::raw(format!("-- {} --     ", active_buffer.mode)),
+            active_buffer.message(),
+        ]))
         .render(layout[1], buf);
 
         active_buffer.render_cursor(buf);
