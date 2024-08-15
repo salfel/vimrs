@@ -61,6 +61,15 @@ mod tests {
     use ratatui::crossterm::event::KeyModifiers;
 
     #[test]
+    fn exit() {
+        let mut buf = Buffer::new(String::new());
+        buf.mode = Mode::Insert;
+
+        buf.handle_keys(KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE));
+        assert_eq!(buf.mode, Mode::Normal);
+    }
+
+    #[test]
     fn add_char() {
         let mut buf = Buffer::new(String::new());
         buf.mode = Mode::Insert;
