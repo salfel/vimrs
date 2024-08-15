@@ -1,4 +1,4 @@
-use std::cmp::min;
+use std::{cmp::min, usize};
 
 use crate::{
     buffer::{Buffer, Position},
@@ -171,6 +171,46 @@ pub fn prev_word_start(buf: &Buffer) -> Position {
     }
 }
 
+#[allow(clippy::iter_skip_zero)]
+pub fn word_start(buf: &Buffer) -> Position {
+    let mut line = buf.row(buf.cursor.row);
+    let mut cursor = buf.cursor;
+
+    let (iterator, mut prev) =
+        if no_word_after(line, cursor.col) && cursor.row != buf.content.len() - 1 {
+            match buf.content.get(cursor.row + 1) {
+                Some(row) => {
+                    cursor.row += 1;
+                    line = row;
+                    (line.chars().enumerate().skip(0), ' ')
+                }
+                None => return buf.cursor,
+            }
+        } else {
+            let mut iterator = line.chars().enumerate().skip(buf.cursor.col);
+            let prev = match iterator.next() {
+                Some(item) => item.1,
+                None => return cursor,
+            };
+            (iterator, prev)
+        };
+
+    for (idx, char) in iterator {
+        if (is_word_delimiter(char) && !is_word_delimiter(prev) || (char != ' ' && prev == ' '))
+            && idx != cursor.col
+        {
+            return Position {
+                row: cursor.row,
+                col: idx,
+            };
+        }
+
+        prev = char;
+    }
+
+    buf.cursor
+}
+
 fn is_word_delimiter(char: char) -> bool {
     WORD_DELIMITERS.contains(&char)
 }
@@ -197,6 +237,23 @@ fn first_not_whitespace(line: &str) -> usize {
             .filter_map(|value| if value.1 != ' ' { Some(value.0) } else { None });
 
     iterator.next().unwrap_or_default()
+}
+
+fn no_word_after(line: &str, col: usize) -> bool {
+    let iterator = line.chars().enumerate().skip(col);
+
+    let mut prev = ' ';
+    for (idx, char) in iterator {
+        if (is_word_delimiter(char) && !is_word_delimiter(prev) || (char != ' ' && prev == ' '))
+            && idx != col
+        {
+            return false;
+        }
+
+        prev = char;
+    }
+
+    true
 }
 
 #[cfg(test)]
@@ -291,6 +348,18 @@ mod tests {
     }
 
     #[test]
+    fn cursor_word_start() {
+        let mut buf = Buffer::new(String::from("test.txt"));
+        assert_eq!(word_start(&buf), Position { row: 0, col: 6 });
+
+        buf.cursor = Position { row: 0, col: 17 };
+        assert_eq!(word_start(&buf), Position { row: 0, col: 21 });
+
+        buf.cursor = Position { row: 0, col: 21 };
+        assert_eq!(word_start(&buf), Position { row: 1, col: 0 });
+    }
+
+    #[test]
     fn first_not_whitespace_test() {
         let line = " This is a string";
         assert_eq!(first_not_whitespace(line), 1);
@@ -300,5 +369,14 @@ mod tests {
     fn last_not_whitespace_test() {
         let line = "This is a string ";
         assert_eq!(last_not_whitespace(line), 15);
+    }
+
+    #[test]
+    fn word_after_test() {
+        let line = "This is a string ";
+        assert!(no_word_after(line, 12));
+
+        let line = "This is a string with a whitespace at the end, ";
+        assert!(!no_word_after(line, 42));
     }
 }

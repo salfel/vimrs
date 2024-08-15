@@ -1,6 +1,8 @@
 use crate::{
     buffer::{Buffer, Position},
-    navigation::{down, end_line, left, prev_word_start, right, start_line, up, word_end},
+    navigation::{
+        down, end_line, left, prev_word_start, right, start_line, up, word_end, word_start,
+    },
 };
 
 #[cfg(test)]
@@ -12,10 +14,11 @@ pub enum Motion {
     Right,
     Up,
     Down,
-    Start,
-    End,
+    LineStart,
+    LineEnd,
+    PrevWordStart,
     StartWord,
-    EndWord,
+    WordEnd,
 }
 
 impl Motion {
@@ -25,10 +28,11 @@ impl Motion {
             "j" => Some(Motion::Down),
             "k" => Some(Motion::Up),
             "l" => Some(Motion::Right),
-            "^" => Some(Motion::Start),
-            "$" => Some(Motion::End),
-            "b" => Some(Motion::StartWord),
-            "e" => Some(Motion::EndWord),
+            "^" => Some(Motion::LineStart),
+            "$" => Some(Motion::LineEnd),
+            "b" => Some(Motion::PrevWordStart),
+            "e" => Some(Motion::WordEnd),
+            "w" => Some(Motion::StartWord),
             _ => None,
         }
     }
@@ -42,10 +46,11 @@ impl Motion {
             Motion::Down => down(buf),
             Motion::Up => up(buf),
             Motion::Right => right(buf),
-            Motion::Start => start_line(buf),
-            Motion::End => end_line(buf),
-            Motion::StartWord => prev_word_start(buf),
-            Motion::EndWord => word_end(buf),
+            Motion::LineStart => start_line(buf),
+            Motion::LineEnd => end_line(buf),
+            Motion::PrevWordStart => prev_word_start(buf),
+            Motion::WordEnd => word_end(buf),
+            Motion::StartWord => word_start(buf),
         }
     }
 }
