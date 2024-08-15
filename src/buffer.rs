@@ -88,13 +88,26 @@ pub struct Position {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
+
     use super::*;
 
     #[test]
-    fn reads_file() {
+    fn read_file_test() {
         let filename = String::from("Cargo.toml");
         let buffer = Buffer::new(filename);
 
         assert!(!buffer.content.is_empty());
+    }
+
+    #[test]
+    fn write_file_test() {
+        let filename = String::from("test");
+        let mut buf = Buffer::new(filename.clone());
+        buf.content[0] = String::from("test");
+        buf.write();
+
+        assert_eq!(read_file(&filename), "test");
+        fs::remove_file(filename).unwrap();
     }
 }
