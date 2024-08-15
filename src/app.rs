@@ -74,3 +74,29 @@ impl Widget for &App {
         active_buffer.render_cursor(buf);
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use ratatui::style::{Style, Stylize};
+
+    use super::*;
+
+    #[test]
+    fn renders_blank_with_mode() {
+        let app = App::new(Vec::new());
+        let mut buf = TBuffer::empty(Rect::new(0, 0, 20, 5));
+
+        app.render(buf.area, &mut buf);
+
+        let mut expected = TBuffer::with_lines(vec![
+            "                    ",
+            "                    ",
+            "                    ",
+            "                    ",
+            "-- Normal --        ",
+        ]);
+        expected.set_style(Rect::new(0, 0, 1, 1), Style::new().on_white().black());
+
+        assert_eq!(buf, expected);
+    }
+}
