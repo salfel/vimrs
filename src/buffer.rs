@@ -19,6 +19,8 @@ pub struct Buffer {
     pub print: String,
     #[cfg(test)]
     pub events: Vec<Event>,
+    #[cfg(test)]
+    pub write: bool,
 }
 
 impl Buffer {
@@ -43,6 +45,8 @@ impl Buffer {
             print: String::new(),
             #[cfg(test)]
             events: Vec::new(),
+            #[cfg(test)]
+            write: false,
         }
     }
 
@@ -71,7 +75,7 @@ impl Buffer {
     }
 
     #[cfg(test)]
-    pub fn input_text(&mut self, text: &str) {
+    pub fn input_keys(&mut self, text: &str) {
         use ratatui::crossterm::event::{KeyCode, KeyModifiers};
 
         for char in text.chars() {

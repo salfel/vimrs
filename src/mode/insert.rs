@@ -74,7 +74,7 @@ mod tests {
         let mut buf = Buffer::new(String::new());
         buf.mode = Mode::Insert;
 
-        buf.input_text("hi");
+        buf.input_keys("hi");
         assert_eq!(buf.content[0], "hi");
     }
 
@@ -82,13 +82,13 @@ mod tests {
     fn pop_char() {
         let mut buf = Buffer::new(String::new());
         buf.mode = Mode::Insert;
-        buf.input_text("test");
+        buf.input_keys("test");
 
         buf.handle_keys(KeyEvent::new(KeyCode::Backspace, KeyModifiers::NONE));
         assert_eq!(buf.content[0], "tes");
 
         buf.handle_keys(KeyEvent::new(KeyCode::Enter, KeyModifiers::NONE));
-        buf.input_text("test2");
+        buf.input_keys("test2");
         buf.cursor = Position { row: 1, col: 0 };
         buf.handle_keys(KeyEvent::new(KeyCode::Backspace, KeyModifiers::NONE));
         assert_eq!(buf.content[0], "testest2");
@@ -98,10 +98,10 @@ mod tests {
     fn new_line() {
         let mut buf = Buffer::new(String::new());
         buf.mode = Mode::Insert;
-        buf.input_text("test");
+        buf.input_keys("test");
 
         buf.handle_keys(KeyEvent::new(KeyCode::Enter, KeyModifiers::NONE));
-        buf.input_text("test2");
+        buf.input_keys("test2");
 
         assert_eq!(buf.content, vec!["test", "test2"]);
     }

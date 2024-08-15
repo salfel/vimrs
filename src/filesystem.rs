@@ -1,7 +1,7 @@
 use std::fs;
 
 // TODO return result
-pub fn read_file(filename: &String) -> String {
+pub fn read_file(filename: &str) -> String {
     match fs::read_to_string(filename) {
         Ok(contents) => contents,
         Err(_) => String::new(),
