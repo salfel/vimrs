@@ -4,6 +4,7 @@ mod filesystem;
 mod mode;
 mod motion;
 mod navigation;
+mod test;
 mod tui;
 
 use app::App;

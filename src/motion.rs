@@ -3,6 +3,10 @@ use crate::{
     navigation::{down, end_line, end_word, left, right, start_line, start_word, up},
 };
 
+#[cfg(test)]
+use crate::test::Event;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Motion {
     Left,
     Right,
@@ -30,6 +34,9 @@ impl Motion {
     }
 
     pub fn execute(self, buf: &mut Buffer) -> Position {
+        #[cfg(test)]
+        buf.events.push(Event::Motion(self));
+
         match self {
             Motion::Left => left(buf),
             Motion::Down => down(buf),

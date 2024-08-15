@@ -11,7 +11,7 @@ pub mod command;
 pub mod insert;
 pub mod normal;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Mode {
     Normal,
     Insert,

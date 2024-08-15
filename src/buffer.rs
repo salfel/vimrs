@@ -1,9 +1,12 @@
-use ratatui::{buffer::Buffer as TBuffer, crossterm::event::KeyEvent, style::Color, Frame};
+use ratatui::{buffer::Buffer as TBuffer, crossterm::event::KeyEvent, style::Color};
 
 use crate::{
     filesystem::{read_file, write_file},
     mode::Mode,
 };
+
+#[cfg(test)]
+use crate::test::Event;
 
 #[allow(dead_code)]
 pub struct Buffer {
@@ -14,6 +17,8 @@ pub struct Buffer {
     pub mode: Mode,
     pub exit: bool,
     pub print: String,
+    #[cfg(test)]
+    pub events: Vec<Event>,
 }
 
 impl Buffer {
@@ -36,6 +41,8 @@ impl Buffer {
             mode: Mode::Normal,
             exit: false,
             print: String::new(),
+            #[cfg(test)]
+            events: Vec::new(),
         }
     }
 
@@ -64,8 +71,21 @@ impl Buffer {
     }
 }
 
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone, Copy, Debug, PartialEq)]
 pub struct Position {
     pub col: usize,
     pub row: usize,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn reads_file() {
+        let filename = String::from("Cargo.toml");
+        let buffer = Buffer::new(filename);
+
+        assert!(!buffer.content.is_empty());
+    }
 }

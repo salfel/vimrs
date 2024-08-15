@@ -5,21 +5,14 @@ use crate::{
     mode::Mode,
 };
 
-pub fn right(buf: &mut Buffer) -> Position {
+pub fn right(buf: &Buffer) -> Position {
     let mut row_len = buf.row(buf.cursor.row).len();
     if let Mode::Normal = buf.mode {
         row_len -= 1;
     }
 
     if buf.cursor.col >= row_len {
-        if buf.cursor.row < buf.content.len() - 1 {
-            Position {
-                row: buf.cursor.row + 1,
-                col: 0,
-            }
-        } else {
-            buf.cursor
-        }
+        buf.cursor
     } else {
         Position {
             row: buf.cursor.row,
@@ -28,16 +21,9 @@ pub fn right(buf: &mut Buffer) -> Position {
     }
 }
 
-pub fn left(buf: &mut Buffer) -> Position {
+pub fn left(buf: &Buffer) -> Position {
     if buf.cursor.col == 0 {
-        if buf.cursor.row == 0 {
-            buf.cursor
-        } else {
-            Position {
-                row: buf.cursor.row - 1,
-                col: buf.row(buf.cursor.row - 1).len().max(1) - 1,
-            }
-        }
+        buf.cursor
     } else {
         Position {
             row: buf.cursor.row,
@@ -46,7 +32,7 @@ pub fn left(buf: &mut Buffer) -> Position {
     }
 }
 
-pub fn up(buf: &mut Buffer) -> Position {
+pub fn up(buf: &Buffer) -> Position {
     if buf.cursor.row == 0 {
         return buf.cursor;
     }
@@ -62,7 +48,7 @@ pub fn up(buf: &mut Buffer) -> Position {
     }
 }
 
-pub fn down(buf: &mut Buffer) -> Position {
+pub fn down(buf: &Buffer) -> Position {
     if buf.cursor.row >= buf.content.len() - 1 {
         return buf.cursor;
     }
@@ -78,14 +64,14 @@ pub fn down(buf: &mut Buffer) -> Position {
     }
 }
 
-pub fn start_line(buf: &mut Buffer) -> Position {
+pub fn start_line(buf: &Buffer) -> Position {
     Position {
         row: buf.cursor.row,
         col: 0,
     }
 }
 
-pub fn end_line(buf: &mut Buffer) -> Position {
+pub fn end_line(buf: &Buffer) -> Position {
     if let Some(row) = buf.content.get(buf.cursor.row) {
         Position {
             row: buf.cursor.row,
@@ -98,7 +84,7 @@ pub fn end_line(buf: &mut Buffer) -> Position {
 
 const WORD_DELIMITERS: [char; 12] = ['(', ')', '[', ']', '{', '}', '$', '^', '!', '.', ',', ' '];
 
-pub fn end_word(buf: &mut Buffer) -> Position {
+pub fn end_word(buf: &Buffer) -> Position {
     let line = buf.row(buf.cursor.row);
     let mut iterator = line.chars().enumerate().skip(buf.cursor.col);
 
@@ -125,7 +111,7 @@ pub fn end_word(buf: &mut Buffer) -> Position {
     }
 }
 
-pub fn start_word(buf: &mut Buffer) -> Position {
+pub fn start_word(buf: &Buffer) -> Position {
     let mut line = buf.row(buf.cursor.row);
     let mut cursor = buf.cursor;
     let mut skip = line.len() - cursor.col;
@@ -165,30 +151,70 @@ pub fn start_word(buf: &mut Buffer) -> Position {
     }
 }
 
-fn first_not_delimiter(line: &str) -> usize {
-    let iterator = line.chars().enumerate();
-
-    for (idx, char) in iterator {
-        if !WORD_DELIMITERS.contains(&char) {
-            return idx;
-        }
-    }
-
-    line.len().max(1) - 1
-}
-
-fn last_not_delimiter(line: &str) -> usize {
-    let iterator = line.chars().rev().enumerate();
-
-    for (idx, char) in iterator {
-        if !WORD_DELIMITERS.contains(&char) {
-            return line.len() - 1 - idx;
-        }
-    }
-
-    0
-}
-
 fn is_word_delimiter(char: char) -> bool {
     WORD_DELIMITERS.contains(&char)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cursor_down() {
+        let mut buf = Buffer::new(String::from("test.txt"));
+        assert_eq!(down(&buf), Position { row: 1, col: 0 });
+
+        buf.cursor = Position { row: 2, col: 56 };
+        assert_eq!(down(&buf), Position { row: 3, col: 37 });
+
+        buf.cursor = Position { row: 3, col: 0 };
+        assert_eq!(down(&buf), buf.cursor);
+    }
+
+    #[test]
+    fn cursor_up() {
+        let mut buf = Buffer::new(String::from("test.txt"));
+
+        buf.cursor = Position { row: 1, col: 28 };
+        assert_eq!(up(&buf), Position { row: 0, col: 21 });
+
+        buf.cursor = Position { row: 0, col: 0 };
+        assert_eq!(up(&buf), buf.cursor);
+    }
+
+    #[test]
+    fn cursor_left() {
+        let mut buf = Buffer::new(String::from("test.txt"));
+
+        buf.cursor = Position { row: 0, col: 1 };
+        assert_eq!(left(&buf), Position { row: 0, col: 0 });
+
+        buf.cursor = Position { row: 1, col: 0 };
+        assert_eq!(left(&buf), buf.cursor);
+    }
+
+    #[test]
+    fn cursor_right() {
+        let mut buf = Buffer::new(String::from("test.txt"));
+
+        assert_eq!(right(&buf), Position { row: 0, col: 1 });
+
+        buf.cursor = Position { row: 0, col: 21 };
+        assert_eq!(right(&buf), buf.cursor);
+    }
+
+    #[test]
+    fn cursor_end() {
+        let buf = Buffer::new(String::from("test.txt"));
+
+        assert_eq!(end_line(&buf), Position { row: 0, col: 21 });
+    }
+
+    #[test]
+    fn cursor_start() {
+        let mut buf = Buffer::new(String::from("test.txt"));
+        buf.cursor = Position { row: 0, col: 15 };
+
+        assert_eq!(start_line(&buf), Position { row: 0, col: 0 });
+    }
 }
