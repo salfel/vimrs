@@ -86,129 +86,117 @@ const WORD_DELIMITERS: [char; 11] = ['(', ')', '[', ']', '{', '}', '$', '^', '!'
 
 #[allow(clippy::iter_skip_zero)]
 pub fn word_end(buf: &Buffer) -> Position {
-    let line = buf.row(buf.cursor.row);
-    let mut cursor = buf.cursor;
+    let mut prev = 'a';
+    let row_iterator = buf.content.iter().enumerate().skip(buf.cursor.row);
 
-    let (iterator, mut prev) = if buf.cursor.col == last_not_whitespace(line) {
-        match buf.content.get(buf.cursor.row + 1) {
-            Some(line) => {
-                cursor.row += 1;
-                (line.chars().enumerate().skip(0), ' ')
-            }
-            None => return buf.cursor,
-        }
-    } else {
-        let mut iterator = line.chars().enumerate().skip(buf.cursor.col);
-        let prev = match iterator.next() {
-            Some(item) => item.1,
-            None => return buf.cursor,
+    for (row, line) in row_iterator {
+        let iterator = if buf.cursor.row == row {
+            line.chars().enumerate().skip(buf.cursor.col + 1)
+        } else {
+            line.chars().enumerate().skip(0)
         };
-        (iterator, prev)
-    };
 
-    for (idx, char) in iterator {
-        if ((is_word_delimiter(char) && !is_word_delimiter(prev)) || (char == ' ' && prev != ' '))
-            && idx - 1 != cursor.col
-        {
-            return Position {
-                row: cursor.row,
-                col: idx - 1,
-            };
+        for (idx, char) in iterator {
+            if (buf.cursor.row != row || buf.cursor.col != idx.max(1) - 1)
+                && ((is_word_delimiter(char) && !is_word_delimiter(prev))
+                    || (char == ' ' && prev != ' '))
+            {
+                return Position {
+                    row,
+                    col: idx.max(1) - 1,
+                };
+            }
+
+            prev = char;
         }
 
-        prev = char;
+        prev = ' ';
     }
 
     Position {
-        row: cursor.row,
-        col: last_not_whitespace(line),
+        row: buf.content.len() - 1,
+        col: last_not_whitespace(buf.content.last().unwrap()),
     }
 }
 
-#[allow(clippy::iter_skip_zero)]
+#[allow(clippy::iter_skip_zero, non_snake_case)]
 pub fn prev_word_start(buf: &Buffer) -> Position {
-    let mut line = buf.row(buf.cursor.row);
-    let mut cursor = buf.cursor;
+    let mut prev = 'a';
+    let row_iterator = buf
+        .content
+        .iter()
+        .rev()
+        .enumerate()
+        .skip(buf.content.len() - 1 - buf.cursor.row)
+        .map(|value| (buf.content.len() - 1 - value.0, value.1));
 
-    let (iterator, mut prev) = if cursor.col == first_not_whitespace(line) && cursor.row != 0 {
-        match buf.content.get(cursor.row - 1) {
-            Some(row) => {
-                cursor.row -= 1;
-                line = row;
-                (line.chars().rev().enumerate().skip(0), ' ')
-            }
-            None => return buf.cursor,
+    for (row, line) in row_iterator {
+        let iterator = if buf.cursor.row == row {
+            line.chars()
+                .rev()
+                .enumerate()
+                .skip(line.len() - buf.cursor.col)
+        } else {
+            line.chars().rev().enumerate().skip(0)
         }
-    } else {
-        let mut iterator = line
-            .chars()
-            .rev()
-            .enumerate()
-            .skip(line.len() - 1 - cursor.col);
-        let prev = match iterator.next() {
-            Some(item) => item.1,
-            None => return buf.cursor,
-        };
-        (iterator, prev)
-    };
+        .map(|value| (line.len() - 1 - value.0, value.1));
 
-    for (idx, char) in iterator {
-        if ((is_word_delimiter(char) && (!is_word_delimiter(prev))) || (char == ' ' && prev != ' '))
-            && line.len() - idx != cursor.col
-        {
+        for (idx, char) in iterator {
+            if (buf.cursor.row != row || buf.cursor.col != idx + 1)
+                && ((is_word_delimiter(char) && !is_word_delimiter(prev) && prev != ' ')
+                    || (!is_word_delimiter(char) && is_word_delimiter(prev))
+                    || (char == ' ' && prev != ' '))
+            {
+                return Position { row, col: idx + 1 };
+            }
+
+            prev = char;
+        }
+
+        if buf.cursor.col != 0 {
             return Position {
-                row: cursor.row,
-                col: line.len() - 1 - idx,
+                row,
+                col: first_not_whitespace(line),
             };
         }
 
-        prev = char;
+        prev = ' ';
     }
 
     Position {
-        row: cursor.row,
-        col: first_not_whitespace(line),
+        row: 0,
+        col: first_not_whitespace(&buf.content[0]),
     }
 }
 
 #[allow(clippy::iter_skip_zero)]
 pub fn word_start(buf: &Buffer) -> Position {
-    let mut line = buf.row(buf.cursor.row);
-    let mut cursor = buf.cursor;
+    let mut prev = 'a';
+    let row_iterator = buf.content.iter().enumerate().skip(buf.cursor.row);
 
-    let (iterator, mut prev) =
-        if no_word_after(line, cursor.col) && cursor.row != buf.content.len() - 1 {
-            match buf.content.get(cursor.row + 1) {
-                Some(row) => {
-                    cursor.row += 1;
-                    line = row;
-                    (line.chars().enumerate().skip(0), ' ')
-                }
-                None => return buf.cursor,
-            }
+    for (row, line) in row_iterator {
+        let iterator = if buf.cursor.row == row {
+            line.chars().enumerate().skip(buf.cursor.col + 1)
         } else {
-            let mut iterator = line.chars().enumerate().skip(buf.cursor.col);
-            let prev = match iterator.next() {
-                Some(item) => item.1,
-                None => return cursor,
-            };
-            (iterator, prev)
+            line.chars().enumerate().skip(0)
         };
 
-    for (idx, char) in iterator {
-        if (is_word_delimiter(char) && !is_word_delimiter(prev) || (char != ' ' && prev == ' '))
-            && idx != cursor.col
-        {
-            return Position {
-                row: cursor.row,
-                col: idx,
-            };
-        }
+        for (idx, char) in iterator {
+            if (buf.cursor.row != row || buf.cursor.col != idx)
+                && ((is_word_delimiter(char) && !is_word_delimiter(prev))
+                    || (char != ' ' && prev == ' '))
+            {
+                return Position { row, col: idx };
+            }
 
-        prev = char;
+            prev = char;
+        }
     }
 
-    buf.cursor
+    Position {
+        row: buf.content.len() - 1,
+        col: last_not_whitespace(buf.content.last().unwrap()),
+    }
 }
 
 fn is_word_delimiter(char: char) -> bool {
@@ -268,7 +256,7 @@ mod tests {
         buf.cursor = Position { row: 2, col: 56 };
         assert_eq!(down(&buf), Position { row: 3, col: 37 });
 
-        buf.cursor = Position { row: 3, col: 0 };
+        buf.cursor = Position { row: 4, col: 0 };
         assert_eq!(down(&buf), buf.cursor);
     }
 
@@ -343,8 +331,18 @@ mod tests {
         buf.cursor = Position { row: 0, col: 6 };
         assert_eq!(prev_word_start(&buf), Position { row: 0, col: 0 });
 
+        buf.cursor = Position { row: 0, col: 14 };
+        assert_eq!(prev_word_start(&buf), Position { row: 0, col: 12 });
+
         buf.cursor = Position { row: 1, col: 0 };
         assert_eq!(prev_word_start(&buf), Position { row: 0, col: 21 });
+
+        buf.cursor = Position { row: 4, col: 10 };
+        buf.cursor = prev_word_start(&buf);
+        assert_eq!(buf.cursor, Position { row: 4, col: 6 });
+        buf.cursor = prev_word_start(&buf);
+        assert_eq!(buf.cursor, Position { row: 4, col: 5 });
+        assert_eq!(prev_word_start(&buf), Position { row: 4, col: 0 });
     }
 
     #[test]
