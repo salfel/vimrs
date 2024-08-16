@@ -91,7 +91,13 @@ pub fn word_end(buf: &Buffer) -> Position {
 
     for (row, line) in row_iterator {
         let iterator = if buf.cursor.row == row {
-            line.chars().enumerate().skip(buf.cursor.col + 1)
+            let mut iterator = line.chars().enumerate().skip(buf.cursor.col + 1);
+
+            if let Some((_, char)) = iterator.next() {
+                prev = char;
+            }
+
+            iterator
         } else {
             line.chars().enumerate().skip(0)
         };
@@ -99,6 +105,7 @@ pub fn word_end(buf: &Buffer) -> Position {
         for (idx, char) in iterator {
             if (buf.cursor.row != row || buf.cursor.col != idx.max(1) - 1)
                 && ((is_word_delimiter(char) && !is_word_delimiter(prev))
+                    || (is_word_delimiter(prev) && !is_word_delimiter(char) && char != ' ')
                     || (char == ' ' && prev != ' '))
             {
                 return Position {
@@ -176,7 +183,13 @@ pub fn word_start(buf: &Buffer) -> Position {
 
     for (row, line) in row_iterator {
         let iterator = if buf.cursor.row == row {
-            line.chars().enumerate().skip(buf.cursor.col + 1)
+            let mut iterator = line.chars().enumerate().skip(buf.cursor.col);
+
+            if let Some((_, char)) = iterator.next() {
+                prev = char;
+            }
+
+            iterator
         } else {
             line.chars().enumerate().skip(0)
         };
@@ -184,6 +197,7 @@ pub fn word_start(buf: &Buffer) -> Position {
         for (idx, char) in iterator {
             if (buf.cursor.row != row || buf.cursor.col != idx)
                 && ((is_word_delimiter(char) && !is_word_delimiter(prev))
+                    || (is_word_delimiter(prev) && !is_word_delimiter(char) && char != ' ')
                     || (char != ' ' && prev == ' '))
             {
                 return Position { row, col: idx };
@@ -225,23 +239,6 @@ fn first_not_whitespace(line: &str) -> usize {
             .filter_map(|value| if value.1 != ' ' { Some(value.0) } else { None });
 
     iterator.next().unwrap_or_default()
-}
-
-fn no_word_after(line: &str, col: usize) -> bool {
-    let iterator = line.chars().enumerate().skip(col);
-
-    let mut prev = ' ';
-    for (idx, char) in iterator {
-        if (is_word_delimiter(char) && !is_word_delimiter(prev) || (char != ' ' && prev == ' '))
-            && idx != col
-        {
-            return false;
-        }
-
-        prev = char;
-    }
-
-    true
 }
 
 #[cfg(test)]
@@ -316,11 +313,16 @@ mod tests {
         buf.cursor = word_end(&buf);
         assert_eq!(buf.cursor, Position { row: 0, col: 20 });
 
-        buf.cursor = word_end(&buf);
-        assert_eq!(buf.cursor, Position { row: 0, col: 21 });
+        buf.cursor = Position { row: 3, col: 36 };
+        assert_eq!(word_end(&buf), Position { row: 3, col: 37 });
+        assert_eq!(word_end(&buf), Position { row: 4, col: 4 });
 
-        // new line
-        assert_eq!(word_end(&buf), Position { row: 1, col: 11 });
+        buf.cursor = Position { row: 4, col: 0 };
+        buf.cursor = word_end(&buf);
+        assert_eq!(buf.cursor, Position { row: 4, col: 4 });
+        buf.cursor = word_end(&buf);
+        assert_eq!(buf.cursor, Position { row: 4, col: 5 });
+        assert_eq!(word_end(&buf), Position { row: 4, col: 10 });
     }
 
     #[test]
@@ -355,6 +357,15 @@ mod tests {
 
         buf.cursor = Position { row: 0, col: 21 };
         assert_eq!(word_start(&buf), Position { row: 1, col: 0 });
+
+        buf.cursor = Position { row: 4, col: 0 };
+        buf.cursor = word_start(&buf);
+        assert_eq!(buf.cursor, Position { row: 4, col: 5 });
+
+        buf.cursor = Position { row: 4, col: 5 };
+        buf.cursor = word_start(&buf);
+        assert_eq!(buf.cursor, Position { row: 4, col: 6 });
+        assert_eq!(word_start(&buf), Position { row: 4, col: 10 });
     }
 
     #[test]
@@ -367,14 +378,5 @@ mod tests {
     fn last_not_whitespace_test() {
         let line = "This is a string ";
         assert_eq!(last_not_whitespace(line), 15);
-    }
-
-    #[test]
-    fn word_after_test() {
-        let line = "This is a string ";
-        assert!(no_word_after(line, 12));
-
-        let line = "This is a string with a whitespace at the end, ";
-        assert!(!no_word_after(line, 42));
     }
 }
