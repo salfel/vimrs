@@ -1,4 +1,4 @@
-use std::{cmp::min, usize};
+use std::cmp::min;
 
 use crate::{
     buffer::{Buffer, Position},
