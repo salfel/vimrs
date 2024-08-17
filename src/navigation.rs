@@ -117,6 +117,13 @@ pub fn word_end(buf: &Buffer) -> Position {
             prev = char;
         }
 
+        if buf.cursor.col != last_not_whitespace(line) {
+            return Position {
+                row,
+                col: last_not_whitespace(line),
+            };
+        }
+
         prev = ' ';
     }
 
@@ -160,7 +167,7 @@ pub fn prev_word_start(buf: &Buffer) -> Position {
             prev = char;
         }
 
-        if buf.cursor.col != 0 {
+        if buf.cursor.col != first_not_whitespace(line) {
             return Position {
                 row,
                 col: first_not_whitespace(line),
@@ -314,7 +321,8 @@ mod tests {
         assert_eq!(buf.cursor, Position { row: 0, col: 20 });
 
         buf.cursor = Position { row: 3, col: 36 };
-        assert_eq!(word_end(&buf), Position { row: 3, col: 37 });
+        buf.cursor = word_end(&buf);
+        assert_eq!(buf.cursor, Position { row: 3, col: 37 });
         assert_eq!(word_end(&buf), Position { row: 4, col: 4 });
 
         buf.cursor = Position { row: 4, col: 0 };
