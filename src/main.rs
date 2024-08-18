@@ -5,6 +5,7 @@ mod mode;
 mod motion;
 mod navigation;
 mod tui;
+mod words;
 
 #[cfg(test)]
 mod test;
