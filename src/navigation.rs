@@ -1,4 +1,4 @@
-use std::cmp::min;
+use std::cmp::{max, min};
 
 use crate::{
     buffer::{Buffer, Position},
@@ -44,7 +44,7 @@ pub fn up(buf: &Buffer) -> Position {
 
     Position {
         row: buf.cursor.row - 1,
-        col: min(buf.cursor.col, prev_row.len().max(1) - 1),
+        col: min(buf.cursor.col, max(1, prev_row.len()) - 1),
     }
 }
 
@@ -60,7 +60,7 @@ pub fn down(buf: &Buffer) -> Position {
 
     Position {
         row: buf.cursor.row + 1,
-        col: min(buf.cursor.col, next_row.len().max(1) - 1),
+        col: min(buf.cursor.col, max(next_row.len(), 1) - 1),
     }
 }
 
@@ -75,7 +75,7 @@ pub fn end_line(buf: &Buffer) -> Position {
     if let Some(row) = buf.content.get(buf.cursor.row) {
         Position {
             row: buf.cursor.row,
-            col: row.len().max(1) - 1,
+            col: max(1, row.len()) - 1,
         }
     } else {
         buf.cursor
@@ -103,14 +103,14 @@ pub fn word_end(buf: &Buffer) -> Position {
         };
 
         for (idx, char) in iterator {
-            if (buf.cursor.row != row || buf.cursor.col != idx.max(1) - 1)
+            if (buf.cursor.row != row || buf.cursor.col != max(idx, 1) - 1)
                 && ((is_word_delimiter(char) && !is_word_delimiter(prev))
                     || (is_word_delimiter(prev) && !is_word_delimiter(char) && char != ' ')
                     || (char == ' ' && prev != ' '))
             {
                 return Position {
                     row,
-                    col: idx.max(1) - 1,
+                    col: max(idx, 1) - 1,
                 };
             }
 
@@ -243,7 +243,7 @@ fn last_not_whitespace(line: &str) -> usize {
 
     match iterator.next() {
         Some(idx) => idx,
-        None => line.len().max(1) - 1,
+        None => max(line.len(), 1) - 1,
     }
 }
 
