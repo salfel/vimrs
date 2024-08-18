@@ -36,21 +36,16 @@ impl Motion {
             "b" => Some(Motion::PrevWordStart),
             "e" => Some(Motion::WordEnd),
             "w" => Some(Motion::StartWord),
-            keys if keys.len() >= 2 => {
-                Self::multi_char_motions(keys.chars().next().unwrap(), &keys[1..])
-            }
+            keys if keys.len() >= 2 => Self::two_char_motions(keys),
             _ => None,
         }
     }
 
-    fn multi_char_motions(char: char, arguments: &str) -> Option<Self> {
-        match char {
-            'f' if arguments.len() == 1 => Some(Motion::Find {
-                char: arguments.chars().next().unwrap(),
-            }),
-            'F' if arguments.len() == 1 => Some(Motion::FindPrev {
-                char: arguments.chars().next().unwrap(),
-            }),
+    fn two_char_motions(keys: &str) -> Option<Self> {
+        let chars: Vec<char> = keys.chars().collect();
+        match (chars[0], chars[1]) {
+            ('f', char) => Some(Motion::Find { char }),
+            ('F', char) => Some(Motion::FindPrev { char }),
             _ => None,
         }
     }

@@ -1,7 +1,4 @@
-use std::{
-    cmp::{max, min},
-    iter,
-};
+use std::cmp::{max, min};
 
 use crate::{
     buffer::{Buffer, Position},
