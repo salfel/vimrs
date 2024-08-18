@@ -1,3 +1,5 @@
+use std::cmp::min;
+
 use ratatui::crossterm::event::{KeyCode, KeyEvent};
 
 use crate::{buffer::Buffer, motion::Motion, navigation::right};
@@ -15,34 +17,49 @@ pub fn handle_normal_keys(buf: &mut Buffer, event: KeyEvent) {
 fn handle_char(buf: &mut Buffer, key: char) {
     buf.keys.push(key);
 
-    match Motion::new(&buf.keys) {
+    let found = match Motion::new(&buf.keys) {
         Some(motion) => {
             buf.cursor = motion.execute(buf);
-            buf.keys = String::new();
+            true
         }
         None => execute_keybindings(buf),
+    };
+
+    if found {
+        buf.keys = String::new();
     }
 }
 
-fn execute_keybindings(buf: &mut Buffer) {
+fn execute_keybindings(buf: &mut Buffer) -> bool {
     match buf.keys.as_str() {
-        "i" => buf.change_mode(Mode::Insert),
+        "i" => buf.mode = Mode::Insert,
         "a" => {
-            buf.change_mode(Mode::Insert);
+            buf.mode = Mode::Insert;
             buf.cursor = right(buf);
         }
-        ":" => buf.change_mode(Mode::Command),
-        _ => {}
+        ":" => buf.mode = Mode::Command,
+        "x" => delete_char(buf),
+        _ => return false,
     }
+
+    true
+}
+
+fn delete_char(buf: &mut Buffer) {
+    let line = &mut buf.content[buf.cursor.row];
+    if line.is_empty() {
+        return;
+    }
+
+    line.remove(buf.cursor.col);
+    buf.cursor.col = min(buf.cursor.col, line.len() - 1);
 }
 
 #[cfg(test)]
 mod tests {
-    use ratatui::crossterm::event::KeyModifiers;
-
     use crate::{
         buffer::Position,
-        test::{assert_count, assert_event},
+        test::{assert_count, assert_event, Event},
     };
 
     use super::*;
@@ -50,13 +67,13 @@ mod tests {
     #[test]
     fn switch_to_insert() {
         let mut buf = Buffer::new(String::from("test.txt"));
-        buf.handle_keys(KeyEvent::new(KeyCode::Char('i'), KeyModifiers::NONE));
+        buf.input_keys("i");
 
         assert_eq!(buf.mode, Mode::Insert);
         assert_eq!(buf.cursor, Position { row: 0, col: 0 });
 
         buf.mode = Mode::Normal;
-        buf.handle_keys(KeyEvent::new(KeyCode::Char('a'), KeyModifiers::NONE));
+        buf.input_keys("a");
 
         assert_eq!(buf.mode, Mode::Insert);
         assert_eq!(buf.cursor, Position { row: 0, col: 1 });
@@ -67,7 +84,7 @@ mod tests {
     #[test]
     fn switch_to_command() {
         let mut buf = Buffer::new(String::new());
-        buf.handle_keys(KeyEvent::new(KeyCode::Char(':'), KeyModifiers::NONE));
+        buf.input_keys(":");
 
         assert_eq!(buf.mode, Mode::Command);
         assert_eq!(buf.keys, String::new());
@@ -76,18 +93,36 @@ mod tests {
     #[test]
     fn motion_executed() {
         let mut buf = Buffer::new(String::from("test.txt"));
-        buf.handle_keys(KeyEvent::new(KeyCode::Char('h'), KeyModifiers::NONE));
+        buf.input_keys("h");
 
         assert_count(&buf.events, 1);
-        assert_event(&buf, crate::test::Event::Motion(Motion::Left));
+        assert_event(&buf, Event::Motion(Motion::Left));
         assert_eq!(buf.keys, String::new());
     }
 
     #[test]
     fn added_to_keys() {
         let mut buf = Buffer::new(String::new());
-        buf.handle_keys(KeyEvent::new(KeyCode::Char('d'), KeyModifiers::NONE));
+        buf.input_keys("d");
 
         assert_eq!(buf.keys, String::from("d"));
+    }
+
+    #[test]
+    fn deletes_char() {
+        let mut buf = Buffer::new(String::from("test.txt"));
+        buf.cursor = Position { row: 0, col: 4 };
+        buf.input_keys("x");
+
+        assert_eq!(buf.content[0], "Lore ipsum odor amet, ");
+        assert_eq!(buf.cursor, Position { row: 0, col: 4 });
+
+        buf.cursor = Position { row: 5, col: 0 };
+        buf.input_keys("x");
+        assert_eq!(buf.content[5], "");
+
+        buf.cursor = Position { row: 0, col: 21 };
+        buf.input_keys("x");
+        assert_eq!(buf.content[0], "Lore ipsum odor amet,");
     }
 }
