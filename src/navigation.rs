@@ -1,4 +1,7 @@
-use std::cmp::{max, min};
+use std::{
+    cmp::{max, min},
+    iter,
+};
 
 use crate::{
     buffer::{Buffer, Position},
@@ -228,6 +231,43 @@ pub fn word_start(buf: &Buffer) -> Position {
     }
 }
 
+pub fn find_char(buf: &Buffer, search: char) -> Position {
+    let line = &buf.content[buf.cursor.row];
+    let iterator = line.chars().enumerate().skip(buf.cursor.col + 1);
+
+    for (idx, char) in iterator {
+        if char == search {
+            return Position {
+                row: buf.cursor.row,
+                col: idx,
+            };
+        }
+    }
+
+    buf.cursor
+}
+
+pub fn find_prev_char(buf: &Buffer, search: char) -> Position {
+    let line = &buf.content[buf.cursor.row];
+    let iterator = line
+        .chars()
+        .rev()
+        .enumerate()
+        .skip(line.len() - buf.cursor.col)
+        .map(|value| (line.len() - 1 - value.0, value.1));
+
+    for (idx, char) in iterator {
+        if char == search {
+            return Position {
+                row: buf.cursor.row,
+                col: idx,
+            };
+        }
+    }
+
+    buf.cursor
+}
+
 fn is_word_delimiter(char: char) -> bool {
     WORD_DELIMITERS.contains(&char)
 }
@@ -395,6 +435,25 @@ mod tests {
         buf.cursor = word_start(&buf);
         assert_eq!(buf.cursor, Position { row: 6, col: 0 });
         assert_eq!(word_start(&buf), Position { row: 6, col: 4 });
+    }
+
+    #[test]
+    fn cursor_find_char() {
+        let mut buf = Buffer::new(String::from("test.txt"));
+        assert_eq!(find_char(&buf, 'i'), Position { row: 0, col: 6 });
+        assert_eq!(find_char(&buf, 'f'), buf.cursor);
+
+        buf.cursor = Position { row: 2, col: 10 };
+        assert_eq!(find_char(&buf, 'c'), Position { row: 2, col: 16 });
+    }
+
+    #[test]
+    fn cursor_find_prev_char() {
+        let mut buf = Buffer::new(String::from("test.txt"));
+        buf.cursor = Position { row: 2, col: 16 };
+        buf.cursor = find_prev_char(&buf, 'c');
+        assert_eq!(buf.cursor, Position { row: 2, col: 4 });
+        assert_eq!(find_prev_char(&buf, 'c'), buf.cursor);
     }
 
     #[test]

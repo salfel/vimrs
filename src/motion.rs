@@ -1,7 +1,8 @@
 use crate::{
     buffer::{Buffer, Position},
     navigation::{
-        down, end_line, left, prev_word_start, right, start_line, up, word_end, word_start,
+        down, end_line, find_char, find_prev_char, left, prev_word_start, right, start_line, up,
+        word_end, word_start,
     },
 };
 
@@ -19,11 +20,13 @@ pub enum Motion {
     PrevWordStart,
     StartWord,
     WordEnd,
+    Find { char: char },
+    FindPrev { char: char },
 }
 
 impl Motion {
-    pub fn new(key: &str) -> Option<Self> {
-        match key {
+    pub fn new(keys: &str) -> Option<Self> {
+        match keys {
             "h" => Some(Motion::Left),
             "j" => Some(Motion::Down),
             "k" => Some(Motion::Up),
@@ -33,6 +36,21 @@ impl Motion {
             "b" => Some(Motion::PrevWordStart),
             "e" => Some(Motion::WordEnd),
             "w" => Some(Motion::StartWord),
+            keys if keys.len() >= 2 => {
+                Self::multi_char_motions(keys.chars().next().unwrap(), &keys[1..])
+            }
+            _ => None,
+        }
+    }
+
+    fn multi_char_motions(char: char, arguments: &str) -> Option<Self> {
+        match char {
+            'f' if arguments.len() == 1 => Some(Motion::Find {
+                char: arguments.chars().next().unwrap(),
+            }),
+            'F' if arguments.len() == 1 => Some(Motion::FindPrev {
+                char: arguments.chars().next().unwrap(),
+            }),
             _ => None,
         }
     }
@@ -51,6 +69,19 @@ impl Motion {
             Motion::PrevWordStart => prev_word_start(buf),
             Motion::WordEnd => word_end(buf),
             Motion::StartWord => word_start(buf),
+            Motion::Find { char } => find_char(buf, char),
+            Motion::FindPrev { char } => find_prev_char(buf, char),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn create_multi_char_motions() {
+        let motion = Motion::new("fa");
+        assert_eq!(motion, Some(Motion::Find { char: 'a' }))
     }
 }
