@@ -117,7 +117,7 @@ pub fn word_end(buf: &Buffer) -> Position {
             prev = char;
         }
 
-        if buf.cursor.col != last_not_whitespace(line) {
+        if buf.cursor.col != last_not_whitespace(line) && !line.is_empty() {
             return Position {
                 row,
                 col: last_not_whitespace(line),
@@ -172,6 +172,8 @@ pub fn prev_word_start(buf: &Buffer) -> Position {
                 row,
                 col: first_not_whitespace(line),
             };
+        } else if line.is_empty() && buf.cursor.row != row {
+            return Position { row, col: 0 };
         }
 
         prev = ' ';
@@ -212,6 +214,12 @@ pub fn word_start(buf: &Buffer) -> Position {
 
             prev = char;
         }
+
+        if line.is_empty() && buf.cursor.row != row {
+            return Position { row, col: 0 };
+        }
+
+        prev = ' ';
     }
 
     Position {
@@ -260,7 +268,7 @@ mod tests {
         buf.cursor = Position { row: 2, col: 56 };
         assert_eq!(down(&buf), Position { row: 3, col: 37 });
 
-        buf.cursor = Position { row: 4, col: 0 };
+        buf.cursor = Position { row: 6, col: 0 };
         assert_eq!(down(&buf), buf.cursor);
     }
 
@@ -330,7 +338,11 @@ mod tests {
         assert_eq!(buf.cursor, Position { row: 4, col: 4 });
         buf.cursor = word_end(&buf);
         assert_eq!(buf.cursor, Position { row: 4, col: 5 });
-        assert_eq!(word_end(&buf), Position { row: 4, col: 10 });
+        buf.cursor = word_end(&buf);
+        assert_eq!(buf.cursor, Position { row: 4, col: 10 });
+
+        buf.cursor = Position { row: 4, col: 10 };
+        assert_eq!(word_end(&buf), Position { row: 6, col: 4 })
     }
 
     #[test]
@@ -353,6 +365,11 @@ mod tests {
         buf.cursor = prev_word_start(&buf);
         assert_eq!(buf.cursor, Position { row: 4, col: 5 });
         assert_eq!(prev_word_start(&buf), Position { row: 4, col: 0 });
+
+        buf.cursor = Position { row: 6, col: 0 };
+        buf.cursor = prev_word_start(&buf);
+        assert_eq!(buf.cursor, Position { row: 5, col: 0 });
+        assert_eq!(prev_word_start(&buf), Position { row: 4, col: 6 });
     }
 
     #[test]
@@ -373,7 +390,11 @@ mod tests {
         buf.cursor = Position { row: 4, col: 5 };
         buf.cursor = word_start(&buf);
         assert_eq!(buf.cursor, Position { row: 4, col: 6 });
-        assert_eq!(word_start(&buf), Position { row: 4, col: 10 });
+        buf.cursor = word_start(&buf);
+        assert_eq!(buf.cursor, Position { row: 5, col: 0 });
+        buf.cursor = word_start(&buf);
+        assert_eq!(buf.cursor, Position { row: 6, col: 0 });
+        assert_eq!(word_start(&buf), Position { row: 6, col: 4 });
     }
 
     #[test]
