@@ -2,7 +2,7 @@ use std::cmp::min;
 
 use ratatui::crossterm::event::{KeyCode, KeyEvent};
 
-use crate::{buffer::Buffer, motion::Motion, navigation::right};
+use crate::{actions::Action, buffer::Buffer, motion::Motion, navigation::right};
 
 use super::Mode;
 
@@ -17,13 +17,20 @@ pub fn handle_normal_keys(buf: &mut Buffer, event: KeyEvent) {
 fn handle_char(buf: &mut Buffer, key: char) {
     buf.keys.push(key);
 
-    let found = match Motion::new(&buf.keys) {
+    let mut found = match Motion::new(&buf.keys) {
         Some(motion) => {
             buf.cursor = motion.execute(buf);
             true
         }
         None => execute_keybindings(buf),
     };
+
+    if !found {
+        if let Some(action) = Action::new(&buf.keys) {
+            action.execute(buf);
+            found = true
+        }
+    }
 
     if found {
         buf.keys = String::new();
@@ -98,6 +105,20 @@ mod tests {
         assert_count(&buf.events, 1);
         assert_event(&buf, Event::Motion(Motion::Left));
         assert_eq!(buf.keys, String::new());
+    }
+
+    #[test]
+    fn action_executed() {
+        let mut buf = Buffer::new(String::from("test.txt"));
+        buf.input_keys("d$");
+
+        assert_count(&buf.events, 2);
+        assert_event(
+            &buf,
+            Event::Action(Action::Delete {
+                motion: Motion::LineEnd,
+            }),
+        )
     }
 
     #[test]

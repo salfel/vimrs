@@ -70,10 +70,7 @@ impl Motion {
     }
 
     pub fn inclusive(&self) -> bool {
-        matches!(
-            self,
-            Motion::PrevWordStart | Motion::WordEnd | Motion::StartWord
-        )
+        matches!(self, Motion::PrevWordStart | Motion::StartWord)
     }
 }
 

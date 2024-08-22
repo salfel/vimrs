@@ -17,6 +17,7 @@ pub fn delete_motion(buf: &mut Buffer, motion: Motion) {
         motion.execute(buf)
     };
 
+    // TODO implement a way to generate a min and max, to resolve range being in wrong direction
     if from.row == end.row {
         let line = buf
             .content
