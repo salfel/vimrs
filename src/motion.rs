@@ -68,6 +68,13 @@ impl Motion {
             Motion::FindPrev { char } => find_prev_char(buf, char),
         }
     }
+
+    pub fn inclusive(&self) -> bool {
+        matches!(
+            self,
+            Motion::PrevWordStart | Motion::WordEnd | Motion::StartWord
+        )
+    }
 }
 
 #[cfg(test)]

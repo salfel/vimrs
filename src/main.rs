@@ -1,3 +1,4 @@
+mod actions;
 mod app;
 mod buffer;
 mod filesystem;
@@ -5,7 +6,7 @@ mod mode;
 mod motion;
 mod navigation;
 mod tui;
-mod words;
+mod utils;
 
 #[cfg(test)]
 mod test;
