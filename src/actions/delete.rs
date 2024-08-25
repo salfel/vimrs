@@ -31,9 +31,14 @@ pub fn delete_motion(buf: &mut Buffer, motion: Motion) {
     }
 }
 
+pub fn delete_line(buf: &mut Buffer) {
+    buf.content.remove(buf.cursor.row);
+    buf.cursor.row = min(buf.cursor.row, buf.content.len() - 1);
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::buffer::Position;
+    use crate::{buffer::Position, test::assert_count};
 
     use super::*;
 
@@ -59,5 +64,22 @@ mod tests {
         buf.cursor = Position { row: 2, col: 0 };
         delete_motion(&mut buf, Motion::Down);
         assert_eq!(buf.content.len(), 5);
+    }
+
+    #[test]
+    fn test_delete_line() {
+        let mut buf = Buffer::new(String::from("test.txt"));
+
+        delete_line(&mut buf);
+        assert_count(&buf.content, 6);
+        assert_eq!(
+            buf.content[0],
+            String::from("consectetuer adipiscing elit. ")
+        );
+
+        buf.cursor.row = buf.content.len() - 1;
+        delete_line(&mut buf);
+        assert_count(&buf.content, 5);
+        assert_eq!(buf.cursor.row, 4);
     }
 }
