@@ -62,7 +62,7 @@ mod tests {
 
     #[test]
     fn exit() {
-        let mut buf = Buffer::new(String::new());
+        let mut buf = Buffer::test(String::new());
         buf.mode = Mode::Insert;
 
         buf.handle_keys(KeyEvent::new(KeyCode::Esc, KeyModifiers::NONE));
@@ -71,7 +71,7 @@ mod tests {
 
     #[test]
     fn add_char() {
-        let mut buf = Buffer::new(String::new());
+        let mut buf = Buffer::test(String::new());
         buf.mode = Mode::Insert;
 
         buf.input_keys("hi");
@@ -80,7 +80,7 @@ mod tests {
 
     #[test]
     fn pop_char() {
-        let mut buf = Buffer::new(String::new());
+        let mut buf = Buffer::test(String::new());
         buf.mode = Mode::Insert;
         buf.input_keys("test");
 
@@ -96,7 +96,7 @@ mod tests {
 
     #[test]
     fn new_line() {
-        let mut buf = Buffer::new(String::new());
+        let mut buf = Buffer::test(String::new());
         buf.mode = Mode::Insert;
         buf.input_keys("test");
 

@@ -299,7 +299,7 @@ mod tests {
 
     #[test]
     fn cursor_down() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
         assert_eq!(down(&buf), Position { row: 1, col: 0 });
 
         buf.cursor = Position { row: 2, col: 56 };
@@ -311,7 +311,7 @@ mod tests {
 
     #[test]
     fn cursor_up() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
 
         buf.cursor = Position { row: 1, col: 28 };
         assert_eq!(up(&buf), Position { row: 0, col: 22 });
@@ -322,7 +322,7 @@ mod tests {
 
     #[test]
     fn cursor_left() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
 
         buf.cursor = Position { row: 0, col: 1 };
         assert_eq!(left(&buf), Position { row: 0, col: 0 });
@@ -333,7 +333,7 @@ mod tests {
 
     #[test]
     fn cursor_right() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
 
         assert_eq!(right(&buf), Position { row: 0, col: 1 });
 
@@ -343,14 +343,14 @@ mod tests {
 
     #[test]
     fn cursor_end() {
-        let buf = Buffer::new(String::from("test.txt"));
+        let buf = Buffer::test(String::from("test.txt"));
 
         assert_eq!(end_line(&buf), Position { row: 0, col: 22 });
     }
 
     #[test]
     fn cursor_start() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
         buf.cursor = Position { row: 0, col: 15 };
 
         assert_eq!(start_line(&buf), Position { row: 0, col: 0 });
@@ -358,7 +358,7 @@ mod tests {
 
     #[test]
     fn cursor_word_end() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
         assert_eq!(word_end(&buf), Position { row: 0, col: 4 });
 
         buf.cursor = Position { row: 0, col: 17 };
@@ -384,7 +384,7 @@ mod tests {
 
     #[test]
     fn cursor_prev_word_start() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
         assert_eq!(prev_word_start(&buf), Position { row: 0, col: 0 });
 
         buf.cursor = Position { row: 0, col: 6 };
@@ -411,7 +411,7 @@ mod tests {
 
     #[test]
     fn cursor_word_start() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
         assert_eq!(word_start(&buf), Position { row: 0, col: 6 });
 
         buf.cursor = Position { row: 0, col: 17 };
@@ -436,7 +436,7 @@ mod tests {
 
     #[test]
     fn cursor_find_char() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
         assert_eq!(find_char(&buf, 'i'), Position { row: 0, col: 6 });
         assert_eq!(find_char(&buf, 'f'), buf.cursor);
 
@@ -446,7 +446,7 @@ mod tests {
 
     #[test]
     fn cursor_find_prev_char() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
         buf.cursor = Position { row: 2, col: 16 };
         buf.cursor = find_prev_char(&buf, 'c');
         assert_eq!(buf.cursor, Position { row: 2, col: 4 });

@@ -1,3 +1,5 @@
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
+
 use ratatui::{
     buffer::Buffer as TBuffer,
     crossterm::event::KeyEvent,
@@ -13,6 +15,8 @@ use crate::{
 #[cfg(test)]
 use crate::test::Event;
 
+pub type Registers = Rc<RefCell<HashMap<char, String>>>;
+
 #[allow(dead_code)]
 pub struct Buffer {
     pub filename: String,
@@ -21,6 +25,7 @@ pub struct Buffer {
     pub keys: String,
     pub mode: Mode,
     pub exit: bool,
+    pub registers: Registers,
     message: Output,
     #[cfg(test)]
     pub events: Vec<Event>,
@@ -29,7 +34,7 @@ pub struct Buffer {
 }
 
 impl Buffer {
-    pub fn new(filename: String) -> Self {
+    pub fn new(filename: String, registers: &Registers) -> Self {
         let (content, error) = Self::get_content(&filename);
 
         let message = match error {
@@ -47,7 +52,28 @@ impl Buffer {
             keys: String::new(),
             mode: Mode::Normal,
             exit: false,
+            registers: Rc::clone(registers),
             message,
+            #[cfg(test)]
+            events: Vec::new(),
+            #[cfg(test)]
+            write: false,
+        }
+    }
+
+    #[cfg(test)]
+    pub fn test(filename: String) -> Self {
+        let content = Self::get_content(&filename).0;
+
+        Buffer {
+            filename,
+            content,
+            cursor: Position::default(),
+            keys: String::new(),
+            mode: Mode::Normal,
+            exit: false,
+            registers: Rc::new(RefCell::new(HashMap::new())),
+            message: Output::default(),
             #[cfg(test)]
             events: Vec::new(),
             #[cfg(test)]
@@ -136,7 +162,7 @@ mod tests {
     #[test]
     fn read_file_test() {
         let filename = String::from("Cargo.toml");
-        let buffer = Buffer::new(filename);
+        let buffer = Buffer::test(filename);
 
         assert!(!buffer.content.is_empty());
     }
@@ -144,7 +170,7 @@ mod tests {
     #[test]
     fn write_file_test() {
         let filename = String::from("test");
-        let mut buf = Buffer::new(filename.clone());
+        let mut buf = Buffer::test(filename.clone());
         buf.content[0] = String::from("test");
         buf.write();
 

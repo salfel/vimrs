@@ -51,7 +51,7 @@ mod tests {
 
     #[test]
     fn exit() {
-        let mut buf = Buffer::new(String::new());
+        let mut buf = Buffer::test(String::new());
         buf.mode = Mode::Command;
 
         buf.input_keys("q");
@@ -63,7 +63,7 @@ mod tests {
     #[test]
     fn write() {
         let filename = String::from("test2");
-        let mut buf = Buffer::new(filename.clone());
+        let mut buf = Buffer::test(filename.clone());
         buf.mode = Mode::Command;
         buf.content[0] = String::from("test");
 
@@ -76,7 +76,7 @@ mod tests {
     #[test]
     fn write_and_exit() {
         let filename = String::from("test3");
-        let mut buf = Buffer::new(filename.clone());
+        let mut buf = Buffer::test(filename.clone());
         buf.mode = Mode::Command;
         buf.content[0] = String::from("test");
 

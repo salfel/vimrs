@@ -58,7 +58,7 @@ mod tests {
 
     #[test]
     fn check_executed() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
 
         Action::new("d$").unwrap().execute(&mut buf);
         assert_eq!(

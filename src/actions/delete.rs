@@ -50,7 +50,7 @@ mod tests {
 
     #[test]
     fn test_delete_motion() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
 
         delete_motion(&mut buf, Motion::LineEnd);
         assert_eq!(buf.content[0], String::new());
@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn test_delete_line() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
 
         delete_line(&mut buf);
         assert_count(&buf.content, 6);
@@ -91,7 +91,7 @@ mod tests {
 
     #[test]
     fn test_delete_end() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
 
         delete_end(&mut buf);
         assert_eq!(buf.content[0], String::new());

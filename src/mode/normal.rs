@@ -73,7 +73,7 @@ mod tests {
 
     #[test]
     fn switch_to_insert() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
         buf.input_keys("i");
 
         assert_eq!(buf.mode, Mode::Insert);
@@ -90,7 +90,7 @@ mod tests {
 
     #[test]
     fn switch_to_command() {
-        let mut buf = Buffer::new(String::new());
+        let mut buf = Buffer::test(String::new());
         buf.input_keys(":");
 
         assert_eq!(buf.mode, Mode::Command);
@@ -99,7 +99,7 @@ mod tests {
 
     #[test]
     fn motion_executed() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
         buf.input_keys("h");
 
         assert_count(&buf.events, 1);
@@ -109,7 +109,7 @@ mod tests {
 
     #[test]
     fn action_executed() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
         buf.input_keys("d$");
 
         assert_count(&buf.events, 2);
@@ -123,7 +123,7 @@ mod tests {
 
     #[test]
     fn added_to_keys() {
-        let mut buf = Buffer::new(String::new());
+        let mut buf = Buffer::test(String::new());
         buf.input_keys("d");
 
         assert_eq!(buf.keys, String::from("d"));
@@ -131,7 +131,7 @@ mod tests {
 
     #[test]
     fn deletes_char() {
-        let mut buf = Buffer::new(String::from("test.txt"));
+        let mut buf = Buffer::test(String::from("test.txt"));
         buf.cursor = Position { row: 0, col: 4 };
         buf.input_keys("x");
 
