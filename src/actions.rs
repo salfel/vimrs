@@ -1,4 +1,4 @@
-use delete::{delete_line, delete_motion};
+use delete::{delete_end, delete_line, delete_motion};
 
 use crate::{buffer::Buffer, mode::Mode, motion::Motion, utils::split_first_char};
 
@@ -8,6 +8,7 @@ pub mod delete;
 pub enum Action {
     Delete { motion: Motion },
     DeleteLine,
+    DeleteEnd,
     Change { motion: Motion },
 }
 
@@ -20,6 +21,7 @@ impl Action {
                 keys => Motion::new(keys).map(|motion| Action::Delete { motion }),
             },
             'c' => Motion::new(&keys).map(|motion| Action::Change { motion }),
+            'D' => Some(Action::DeleteEnd),
             _ => None,
         };
         action
@@ -40,6 +42,9 @@ impl Action {
             }
             Action::DeleteLine => {
                 delete_line(buf);
+            }
+            Action::DeleteEnd => {
+                delete_end(buf);
             }
         }
     }

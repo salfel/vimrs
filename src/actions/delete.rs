@@ -36,6 +36,12 @@ pub fn delete_line(buf: &mut Buffer) {
     buf.cursor.row = min(buf.cursor.row, buf.content.len() - 1);
 }
 
+pub fn delete_end(buf: &mut Buffer) {
+    let line = &mut buf.content[buf.cursor.row];
+    line.replace_range(buf.cursor.col.., "");
+    buf.cursor.col = min(buf.cursor.col, max(line.len(), 1) - 1);
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{buffer::Position, test::assert_count};
@@ -81,5 +87,17 @@ mod tests {
         delete_line(&mut buf);
         assert_count(&buf.content, 5);
         assert_eq!(buf.cursor.row, 4);
+    }
+
+    #[test]
+    fn test_delete_end() {
+        let mut buf = Buffer::new(String::from("test.txt"));
+
+        delete_end(&mut buf);
+        assert_eq!(buf.content[0], String::new());
+
+        buf.cursor = Position { row: 1, col: 13 };
+        delete_end(&mut buf);
+        assert_eq!(buf.content[1], String::from("consectetuer "));
     }
 }
