@@ -6,9 +6,6 @@ use crate::{
     },
 };
 
-#[cfg(test)]
-use crate::test::Event;
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Motion {
     Left,
@@ -51,9 +48,6 @@ impl Motion {
     }
 
     pub fn execute(self, buf: &mut Buffer) -> Position {
-        #[cfg(test)]
-        buf.events.push(Event::Motion(self));
-
         match self {
             Motion::Left => left(buf),
             Motion::Down => down(buf),

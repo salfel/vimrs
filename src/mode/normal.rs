@@ -64,10 +64,7 @@ fn delete_char(buf: &mut Buffer) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        buffer::Position,
-        test::{assert_count, assert_event, Event},
-    };
+    use crate::buffer::Position;
 
     use super::*;
 
@@ -100,10 +97,10 @@ mod tests {
     #[test]
     fn motion_executed() {
         let mut buf = Buffer::test(String::from("test.txt"));
+        buf.cursor.col = 1;
         buf.input_keys("h");
 
-        assert_count(&buf.events, 1);
-        assert_event(&buf, Event::Motion(Motion::Left));
+        assert_eq!(buf.cursor.col, 0);
         assert_eq!(buf.keys, String::new());
     }
 
@@ -112,13 +109,7 @@ mod tests {
         let mut buf = Buffer::test(String::from("test.txt"));
         buf.input_keys("d$");
 
-        assert_count(&buf.events, 2);
-        assert_event(
-            &buf,
-            Event::Action(Action::Delete {
-                motion: Motion::LineEnd,
-            }),
-        )
+        assert_eq!(buf.content[0], String::new());
     }
 
     #[test]

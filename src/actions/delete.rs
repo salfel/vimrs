@@ -44,7 +44,7 @@ pub fn delete_end(buf: &mut Buffer) {
 
 #[cfg(test)]
 mod tests {
-    use crate::{buffer::Position, test::assert_count};
+    use crate::buffer::Position;
 
     use super::*;
 
@@ -77,7 +77,7 @@ mod tests {
         let mut buf = Buffer::test(String::from("test.txt"));
 
         delete_line(&mut buf);
-        assert_count(&buf.content, 6);
+        assert_eq!(buf.content.len(), 6);
         assert_eq!(
             buf.content[0],
             String::from("consectetuer adipiscing elit. ")
@@ -85,7 +85,7 @@ mod tests {
 
         buf.cursor.row = buf.content.len() - 1;
         delete_line(&mut buf);
-        assert_count(&buf.content, 5);
+        assert_eq!(buf.content.len(), 5);
         assert_eq!(buf.cursor.row, 4);
     }
 

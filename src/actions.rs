@@ -30,10 +30,6 @@ impl Action {
     pub fn execute(self, buf: &mut Buffer) {
         match self {
             Action::Delete { motion } => {
-                #[cfg(test)]
-                buf.events
-                    .push(crate::test::Event::Action(Action::Delete { motion }));
-
                 delete_motion(buf, motion);
             }
             Action::Change { motion } => {
@@ -52,8 +48,6 @@ impl Action {
 
 #[cfg(test)]
 mod tests {
-    use crate::test::Event;
-
     use super::*;
 
     #[test]
@@ -61,15 +55,7 @@ mod tests {
         let mut buf = Buffer::test(String::from("test.txt"));
 
         Action::new("d$").unwrap().execute(&mut buf);
-        assert_eq!(
-            buf.events,
-            vec![
-                Event::Action(Action::Delete {
-                    motion: Motion::LineEnd
-                }),
-                Event::Motion(Motion::LineEnd)
-            ]
-        );
+        assert_eq!(buf.content[0], String::new());
     }
 
     #[test]

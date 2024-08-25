@@ -12,9 +12,6 @@ use crate::{
     mode::Mode,
 };
 
-#[cfg(test)]
-use crate::test::Event;
-
 pub type Registers = Rc<RefCell<HashMap<char, String>>>;
 
 #[allow(dead_code)]
@@ -27,10 +24,6 @@ pub struct Buffer {
     pub exit: bool,
     pub registers: Registers,
     message: Output,
-    #[cfg(test)]
-    pub events: Vec<Event>,
-    #[cfg(test)]
-    pub write: bool,
 }
 
 impl Buffer {
@@ -54,10 +47,6 @@ impl Buffer {
             exit: false,
             registers: Rc::clone(registers),
             message,
-            #[cfg(test)]
-            events: Vec::new(),
-            #[cfg(test)]
-            write: false,
         }
     }
 
@@ -74,10 +63,6 @@ impl Buffer {
             exit: false,
             registers: Rc::new(RefCell::new(HashMap::new())),
             message: Output::default(),
-            #[cfg(test)]
-            events: Vec::new(),
-            #[cfg(test)]
-            write: false,
         }
     }
 

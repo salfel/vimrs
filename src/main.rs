@@ -8,9 +8,6 @@ mod navigation;
 mod tui;
 mod utils;
 
-#[cfg(test)]
-mod test;
-
 use app::App;
 use std::{env, io};
 
