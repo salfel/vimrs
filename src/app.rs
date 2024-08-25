@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::HashMap, io, rc::Rc, time::Duration};
+use std::{io, time::Duration};
 
 use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
@@ -10,24 +10,25 @@ use ratatui::{
 };
 
 use crate::{
-    buffer::{Buffer, Registers},
+    buffer::{Buffer, Register},
     tui,
 };
 
+#[allow(dead_code)]
 pub struct App {
     buffers: Vec<Buffer>,
     active_buffer: usize,
-    registers: Registers,
+    register: Register,
 }
 
 impl App {
     pub fn new(args: Vec<String>) -> Self {
         let filename = args.get(1).map_or(String::new(), |value| value.to_string());
-        let registers = Rc::new(RefCell::new(HashMap::new()));
+        let register = Register::new();
 
         App {
-            buffers: vec![Buffer::new(filename, &registers)],
-            registers,
+            buffers: vec![Buffer::new(filename, &register)],
+            register,
             active_buffer: 0,
         }
     }

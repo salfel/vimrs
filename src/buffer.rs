@@ -12,9 +12,6 @@ use crate::{
     mode::Mode,
 };
 
-pub type Registers = Rc<RefCell<HashMap<char, String>>>;
-
-#[allow(dead_code)]
 pub struct Buffer {
     pub filename: String,
     pub content: Vec<String>,
@@ -22,12 +19,12 @@ pub struct Buffer {
     pub keys: String,
     pub mode: Mode,
     pub exit: bool,
-    pub registers: Registers,
+    pub register: Register,
     message: Output,
 }
 
 impl Buffer {
-    pub fn new(filename: String, registers: &Registers) -> Self {
+    pub fn new(filename: String, register: &Register) -> Self {
         let (content, error) = Self::get_content(&filename);
 
         let message = match error {
@@ -45,7 +42,7 @@ impl Buffer {
             keys: String::new(),
             mode: Mode::Normal,
             exit: false,
-            registers: Rc::clone(registers),
+            register: Register::clone(&register),
             message,
         }
     }
@@ -61,7 +58,7 @@ impl Buffer {
             keys: String::new(),
             mode: Mode::Normal,
             exit: false,
-            registers: Rc::new(RefCell::new(HashMap::new())),
+            register: Register::new(),
             message: Output::default(),
         }
     }
@@ -136,6 +133,38 @@ struct Output {
 pub struct Position {
     pub col: usize,
     pub row: usize,
+}
+
+pub struct Register(Rc<RefCell<HashMap<char, String>>>);
+
+#[allow(dead_code)]
+impl Register {
+    pub fn new() -> Self {
+        Register(Rc::new(RefCell::new(HashMap::new())))
+    }
+
+    pub fn clone(&self) -> Register {
+        Register(Rc::clone(&self.0))
+    }
+
+    pub fn get(&self, char: char) -> String {
+        match (*self.0).borrow().get(&char) {
+            Some(value) => value.to_string(),
+            None => String::new(),
+        }
+    }
+
+    pub fn set(&self, char: char, value: String) -> Option<String> {
+        (*self.0).borrow_mut().insert(char, value)
+    }
+
+    pub fn get_default(&self) -> String {
+        self.get('*')
+    }
+
+    pub fn set_default(&self, value: String) -> Option<String> {
+        self.set('*', value)
+    }
 }
 
 #[cfg(test)]
