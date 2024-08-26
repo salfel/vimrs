@@ -3,6 +3,7 @@ use std::{cell::RefCell, collections::HashMap, rc::Rc};
 use ratatui::{
     buffer::Buffer as TBuffer,
     crossterm::event::KeyEvent,
+    layout::Position as TuiPosition,
     style::{Color, Style},
     text::Span,
 };
@@ -42,7 +43,7 @@ impl Buffer {
             keys: String::new(),
             mode: Mode::Normal,
             exit: false,
-            register: Register::clone(&register),
+            register: Register::clone(register),
             message,
         }
     }
@@ -79,7 +80,7 @@ impl Buffer {
     }
 
     pub fn render_cursor(&self, buf: &mut TBuffer) {
-        let cell = buf.get_mut(self.cursor.col as u16, self.cursor.row as u16);
+        let cell = buf.cell_mut(self.cursor).unwrap();
         cell.set_bg(Color::White).set_fg(Color::Black);
     }
 
@@ -133,6 +134,15 @@ struct Output {
 pub struct Position {
     pub col: usize,
     pub row: usize,
+}
+
+impl From<Position> for TuiPosition {
+    fn from(value: Position) -> Self {
+        TuiPosition {
+            x: value.col as u16,
+            y: value.row as u16,
+        }
+    }
 }
 
 pub struct Register(Rc<RefCell<HashMap<char, String>>>);

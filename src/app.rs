@@ -1,18 +1,18 @@
-use std::{io, time::Duration};
+use std::{
+    io::{self, Stdout},
+    time::Duration,
+};
 
 use ratatui::{
     crossterm::event::{self, Event, KeyEventKind},
     layout::{Constraint, Layout},
-    prelude::{Buffer as TBuffer, Rect},
+    prelude::{Buffer as TBuffer, CrosstermBackend, Rect},
     text::{Line, Span},
     widgets::{Paragraph, Widget},
-    Frame,
+    Frame, Terminal,
 };
 
-use crate::{
-    buffer::{Buffer, Register},
-    tui,
-};
+use crate::buffer::{Buffer, Register};
 
 #[allow(dead_code)]
 pub struct App {
@@ -33,7 +33,7 @@ impl App {
         }
     }
 
-    pub fn run(&mut self, terminal: &mut tui::Tui) -> io::Result<()> {
+    pub fn run(&mut self, terminal: &mut Terminal<CrosstermBackend<Stdout>>) -> io::Result<()> {
         while !self.get_active_buffer().exit {
             terminal.draw(|frame| self.render_frame(frame))?;
             self.handle_events()?;
@@ -43,7 +43,7 @@ impl App {
     }
 
     fn render_frame(&mut self, frame: &mut Frame) {
-        self.render(frame.size(), frame.buffer_mut());
+        self.render(frame.area(), frame.buffer_mut());
     }
 
     fn handle_events(&mut self) -> io::Result<()> {
